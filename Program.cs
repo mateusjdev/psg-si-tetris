@@ -326,7 +326,7 @@ namespace atp_tp_tetris
                     // 10 FPS
                     for (int j = 0; j < 10; j++)
                     {
-                        Thread.Sleep(10);
+                        Thread.Sleep(20);
                         if (Console.KeyAvailable)
                         {
                             var key = Console.ReadKey();
