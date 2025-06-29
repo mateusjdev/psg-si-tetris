@@ -445,8 +445,12 @@ namespace atp_tp_tetris
                 int k = pos_peca_lin + peca.HitboxVerticalInicio();
                 for (int j = peca.HitboxVerticalInicio(); j <= peca.HitboxVerticalFim(); j++, k++)
                 {
-                    if (k >= 0 && k + peca.HitboxVerticalFim() <= LINES
-                        && pos_peca_col >= 0 && pos_peca_col + peca.HitboxHorizontalFim() <= COLUMNS + 1)
+                    if (
+                        k >= 0 &&
+                        k + peca.HitboxVerticalFim() <= LINES + 1 &&
+                        pos_peca_col >= 0 &&
+                        pos_peca_col + peca.HitboxHorizontalFim() <= COLUMNS + 1
+                        )
                     {
 
                         if (peca.Peca[j, i] > 0)
@@ -466,7 +470,7 @@ namespace atp_tp_tetris
         // VerificarLinhas -> Verifica se há uma linha com tudo 0 
         // VerificarLinhas -> Mover linhas para baixo (se tem uma linha com 1 e abaixo com 0, descer linha)
 
-        private void ResetarDisplay()
+        private void ResetarMatrizDisplay()
         {
             for (int i = 0; i < tabuleiro.GetLength(0); i++)
             {
@@ -484,7 +488,7 @@ namespace atp_tp_tetris
             {
                 Console.WriteLine("Deseja salvar a pontuação? (S/N)");
                 resposta = Console.ReadLine();
-                if(resposta != "S" || resposta != "N")
+                if (resposta != "S" || resposta != "N")
                 {
                     Console.WriteLine("Resposta Inválida! Digite 'S' ou 'N'");
                 }
@@ -508,34 +512,33 @@ namespace atp_tp_tetris
             jogador = new Jogador(nome, 0);
             const int INSERT_LIN = -1;
 
-            bool rodando = true;
-            while (rodando)
+            bool jogando = true;
+            while (jogando)
             {
                 Tetrominos nova_peca = new Tetrominos(Tetrominos.EscolherFormatoAleatorio());
                 int VERTICAL_LENGHT = tabuleiro.GetLength(1);
                 int insert_linha = INSERT_LIN;
                 // TODO: Verificar se o arredondamento é para baixo.
                 int insert_col = (VERTICAL_LENGHT - nova_peca.Peca.GetLength(0)) / 2;
-                bool rodando_peca = true;
-                for (int i = 0; rodando_peca; i++)
+                bool pecaCaindo = true;
+                for (int i = 0; pecaCaindo; i++)
                 {
                     // Console.WriteLine($"{insert_linha}, {insert_col}");
-                    int colisao = VerificarColisao(insert_linha, insert_col, nova_peca);
-                    if (colisao == COLISAO_VERTICAL)
+                    if (VerificarColisao(insert_linha, insert_col, nova_peca) == COLISAO_VERTICAL)
                     {
                         if (insert_linha == INSERT_LIN)
                         {
-                            rodando = false;
+                            jogando = false;
                             MostrarTabuleiro();
                             FimDeJogo();
                         }
                         // Console.WriteLine("Colisão");
                         InserirPeca(insert_linha - 1, insert_col, tabuleiro, nova_peca);
-                        rodando_peca = false;
+                        pecaCaindo = false;
                     }
                     else
                     {
-                        ResetarDisplay();
+                        ResetarMatrizDisplay();
                         // Console.WriteLine("Pode continuar chefe!");
                         InserirPeca(insert_linha, insert_col, display, nova_peca);
                         insert_linha++;
@@ -558,10 +561,18 @@ namespace atp_tp_tetris
                                 case ConsoleKey.LeftArrow:
                                     // Console.WriteLine("fn Rotacionar Peça Sentido Anti-Horario");
                                     nova_peca.Rotacionar90AntiHorario();
+                                    if (VerificarColisao(insert_linha, insert_col, nova_peca) != SEM_COLISAO)
+                                    {
+                                        nova_peca.Rotacionar90Horario();
+                                    }
                                     break;
                                 case ConsoleKey.RightArrow:
                                     // Console.WriteLine("fn Rotacionar Peça Sentido Horario");
                                     nova_peca.Rotacionar90Horario();
+                                    if(VerificarColisao(insert_linha, insert_col, nova_peca) != SEM_COLISAO)
+                                    {
+                                        nova_peca.Rotacionar90AntiHorario();
+                                    }
                                     break;
                                 case ConsoleKey.A:
                                     // Console.WriteLine("fn Mover para Esqueda");
@@ -593,7 +604,7 @@ namespace atp_tp_tetris
                                     break;
                             }
 
-                            ResetarDisplay();
+                            ResetarMatrizDisplay();
                             InserirPeca(insert_linha, insert_col, display, nova_peca);
                             MostrarTabuleiro();
                         }
