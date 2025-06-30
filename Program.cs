@@ -569,7 +569,7 @@ namespace atp_tp_tetris
                                 case ConsoleKey.RightArrow:
                                     // Console.WriteLine("fn Rotacionar Peça Sentido Horario");
                                     nova_peca.Rotacionar90Horario();
-                                    if(VerificarColisao(insert_linha, insert_col, nova_peca) != SEM_COLISAO)
+                                    if (VerificarColisao(insert_linha, insert_col, nova_peca) != SEM_COLISAO)
                                     {
                                         nova_peca.Rotacionar90AntiHorario();
                                     }
@@ -589,13 +589,25 @@ namespace atp_tp_tetris
                                     }
                                     break;
                                 case ConsoleKey.DownArrow:
-                                    // Console.WriteLine("fn MoverBaixo");
-                                    break;
+                                    if (VerificarColisao(insert_linha + 1, insert_col, nova_peca) != SEM_COLISAO) {
+                                        insert_linha++;
+                                        j = FRAMES_PER_SECOND;
+                                    }
+                                        // Console.WriteLine("fn MoverBaixo");
+                                        break;
                                 case ConsoleKey.Spacebar:
+                                    bool colidiu = false;
+                                    for (int a = 0; !colidiu; a++)
+                                    {
+                                        if (VerificarColisao(insert_linha + a, insert_col, nova_peca) != SEM_COLISAO)
+                                        {
+                                            colidiu = true;
+                                            InserirPeca(insert_linha + a - 1, insert_col, tabuleiro, nova_peca);
+                                            pecaCaindo = false;
+                                            j = FRAMES_PER_SECOND;
+                                        }
+                                    }
                                     // Console.WriteLine("fn Cair");
-                                    break;
-                                case ConsoleKey.C:
-                                    // Console.WriteLine("fn GuardarPeca");
                                     break;
                                 case ConsoleKey.Escape:
                                     Console.WriteLine("Jogo Pausado!");
