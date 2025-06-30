@@ -76,26 +76,6 @@ namespace atp_tp_tetris
             return pecas_disponiveis[index_peca];
         }
 
-        public void Visualizar()
-        {
-            for (int i = 0; i < peca.GetLength(0); i++)
-            {
-                for (int j = 0; j < peca.GetLength(1); j++)
-                {
-                    if (peca[i, j] > 0)
-                    {
-                        Console.Write("X");
-                    }
-                    else
-                    {
-                        Console.Write("*");
-                    }
-                }
-                Console.WriteLine();
-            }
-            Console.WriteLine();
-        }
-
         private static void CopiarPeca(int[,] src, int[,] dest)
         {
             if (dest.GetLength(0) != src.GetLength(0)) return;
@@ -196,43 +176,6 @@ namespace atp_tp_tetris
             return 0;
         }
     }
-    class TetrisHelper
-    {
-        public static void MostrarMatriz(int[,] _tabuleiro)
-        {
-            for (int i = 0; i < _tabuleiro.GetLength(0); i++)
-            {
-                for (int j = 0; j < _tabuleiro.GetLength(1); j++)
-                {
-                    Console.Write(_tabuleiro[i, j]);
-                }
-                Console.WriteLine();
-            }
-        }
-
-        public static void WaitForInput(bool print = false)
-        {
-            if (print)
-            {
-                Console.WriteLine("Pressione qualquer tecla!");
-            }
-            Console.ReadLine();
-        }
-
-        public static void MatrizCopy(int[,] source, int[,] destination)
-        {
-            if (source.GetLength(0) != destination.GetLength(0)) return;
-            if (source.GetLength(1) != destination.GetLength(1)) return;
-
-            for (int i = 0; i < source.GetLength(0); i++)
-            {
-                for (int j = 0; j < source.GetLength(1); j++)
-                {
-                    destination[i, j] = source[i, j];
-                }
-            }
-        }
-    }
 
     class Jogador
     {
@@ -281,13 +224,10 @@ namespace atp_tp_tetris
         private const int COLISAO_VERTICAL = 1;
         private const int COLISAO_HORIZONTAL = 2;
 
-        private const char LIN_DIV = '-';
-        private const char COL_DIV = '|';
+        private const char DIV = '|';
 
         private int[,] tabuleiro = new int[LINES, COLUMNS];
         private int[,] display = new int[LINES, COLUMNS];
-
-        private Random random = new Random();
 
         private Jogador jogador;
 
@@ -307,7 +247,7 @@ namespace atp_tp_tetris
             Console.WriteLine("\x1b[H");
             for (int i = 0; i < display.GetLength(0); i++)
             {
-                Console.Write(COL_DIV);
+                Console.Write(DIV);
                 for (int j = 0; j < display.GetLength(1); j++)
                 {
                     if (display[i, j] > 0)
@@ -321,7 +261,7 @@ namespace atp_tp_tetris
 
                     if (j != display.GetLength(1))
                     {
-                        Console.Write(COL_DIV);
+                        Console.Write(DIV);
                     }
                 }
                 Console.WriteLine();
@@ -335,8 +275,6 @@ namespace atp_tp_tetris
             int hitbox_bottom = peca.HitboxVerticalFim();
             int hitbox_left = peca.HitboxHorizontalInicio();
             int hitbox_right = peca.HitboxHorizontalFim();
-
-
 
             if (pos_peca_lin < -1 || pos_peca_lin + hitbox_bottom >= LINES)
             {
@@ -420,14 +358,8 @@ namespace atp_tp_tetris
                 int k = pos_peca_lin + peca.HitboxVerticalInicio();
                 for (int j = peca.HitboxVerticalInicio(); j <= peca.HitboxVerticalFim(); j++, k++)
                 {
-                    if (
-                        k >= 0 &&
-                        k + peca.HitboxVerticalFim() <= LINES + 1 &&
-                        pos_peca_col >= 0 &&
-                        pos_peca_col + peca.HitboxHorizontalFim() <= COLUMNS + 1
-                        )
+                    if (k >= 0 && k + peca.HitboxVerticalFim() <= LINES + 1)
                     {
-
                         if (peca.Peca[j, i] > 0)
                             _tabuleiro[k, pos_peca_col] = 1;
                     }
@@ -455,11 +387,11 @@ namespace atp_tp_tetris
             {
                 Console.WriteLine("Deseja salvar a pontuação? (S/N)");
                 resposta = Console.ReadLine();
-                if (resposta != "S" || resposta != "N")
+                if (resposta != "S" && resposta != "N")
                 {
                     Console.WriteLine("Resposta Inválida! Digite 'S' ou 'N'");
                 }
-            } while (resposta != "S" || resposta != "N");
+            } while (resposta != "S" && resposta != "N");
             jogador.SalvarPontuacao("scores.txt");
         }
 
@@ -589,7 +521,9 @@ namespace atp_tp_tetris
         {
             Tetris jogo = new Tetris();
             jogo.Iniciar();
-            TetrisHelper.WaitForInput();
+
+            Console.WriteLine("Pressione qualquer tecla para continuar!");
+            Console.ReadLine();
         }
     }
 }
