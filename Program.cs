@@ -448,6 +448,7 @@ namespace atp_tp_tetris
                         if (posLinha == LINHA_INICIAL)
                         {
                             jogando = false;
+                            pecaCaindo = false;
                             MostrarTabuleiro();
                             FimDeJogo();
                         }
@@ -526,7 +527,7 @@ namespace atp_tp_tetris
                                 }
                                 ResetarMatrizDisplay();
                                 InserirPeca(posLinha, posColuna, display, nova_peca);
-                            }                            
+                            }
                             MostrarTabuleiro();
                         }
                     }
