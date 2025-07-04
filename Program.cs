@@ -329,7 +329,8 @@ namespace atp_tp_tetris
         private void VerificarAndRemoverLinhas()
         {
             int linhasRemovidas = 0;
-            for (int i = tabuleiro.GetLength(0) - 1; i >= 0; i--)
+            int linhaFinal = tabuleiro.GetLength(0) - 1;
+            for (int i = linhaFinal; i >= 0; i--)
             {
                 bool completa = true;
                 for (int j = 0; j < tabuleiro.GetLength(1) && completa; j++)
@@ -343,7 +344,7 @@ namespace atp_tp_tetris
                 {
                     linhasRemovidas++;
                     RemoverLinha(i);
-                    i = 0;
+                    i = linhaFinal;
                 }
             }
 
@@ -397,7 +398,10 @@ namespace atp_tp_tetris
                     Console.WriteLine("Resposta Inválida! Digite 'S' ou 'N'");
                 }
             } while (resposta != "S" && resposta != "N");
-            jogador.SalvarPontuacao("scores.txt");
+            if (resposta == "S")
+            {
+                jogador.SalvarPontuacao("scores.txt");
+            }
         }
 
         private void ImprimirControles()
