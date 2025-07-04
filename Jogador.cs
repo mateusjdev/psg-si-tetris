@@ -27,7 +27,7 @@ namespace atp_tp_tetris
             this.pontuacao = pontuacao;
         }
 
-        public void SalvarPontuacao(string caminhoArquivo)
+        public void SalvarPontuacao(string caminhoArquivo = "scores.txt")
         {
             try
             {

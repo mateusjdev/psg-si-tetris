@@ -188,7 +188,7 @@ namespace atp_tp_tetris
             } while (resposta != "S" && resposta != "N");
             if (resposta == "S")
             {
-                jogador.SalvarPontuacao("scores.txt");
+                jogador.SalvarPontuacao();
             }
         }
 
