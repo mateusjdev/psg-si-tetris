@@ -37,7 +37,7 @@ namespace atp_tp_tetris
 
         public void MostrarTabuleiro()
         {
-            Console.WriteLine("\x1b[H");
+            Console.Write("\u001b[H");
             for (int i = 0; i < display.GetLength(0); i++)
             {
                 Console.Write(DIV);
@@ -45,7 +45,34 @@ namespace atp_tp_tetris
                 {
                     if (display[i, j] > 0)
                     {
-                        Console.Write("X");
+                        switch(display[i, j])
+                        {
+                            case Tetrominos.CYAN:
+                                Console.Write("\u001b[46;36mX\u001b[0m");
+                                break;
+                            case Tetrominos.BLUE:
+                                Console.Write("\u001b[44;34mX\u001b[0m");
+                                break;
+                            case Tetrominos.ORANGE:
+                                Console.Write("\u001b[47;37mX\u001b[0m");
+                                break;
+                            case Tetrominos.YELLOW:
+                                Console.Write("\u001b[43;33mX\u001b[0m");
+                                break;
+                            case Tetrominos.GREEN:
+                                Console.Write("\u001b[42;32mX\u001b[0m");
+                                break;
+                            case Tetrominos.PURPLE:
+                                Console.Write("\u001b[45;35mX\u001b[0m");
+                                break;
+                            case Tetrominos.RED:
+                                Console.Write("\u001b[41;31mX\u001b[0m");
+                                break;
+                            default:
+                                Console.Write("\u001b[0mX");
+                                break;
+
+                        }
                     }
                     else
                     {
@@ -87,7 +114,7 @@ namespace atp_tp_tetris
                 {
                     if (k >= 0)
                     {
-                        if (tabuleiro[k, pos_peca_col] + peca.Peca[j, i] > 1)
+                        if (tabuleiro[k, pos_peca_col] > 0 && peca.Peca[j, i] > 0)
                         {
                             return COLISAO_VERTICAL;
                         }
@@ -155,13 +182,11 @@ namespace atp_tp_tetris
                     if (k >= 0)
                     {
                         if (peca.Peca[j, i] > 0)
-                            _tabuleiro[k, pos_peca_col] = 1;
+                            _tabuleiro[k, pos_peca_col] = peca.Peca[j, i];
                     }
                 }
             }
         }
-
-
 
         private void ResetarMatrizDisplay()
         {
@@ -173,6 +198,7 @@ namespace atp_tp_tetris
                 }
             }
         }
+
         private void FimDeJogo()
         {
             Console.WriteLine("Fim de jogo!");

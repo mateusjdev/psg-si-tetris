@@ -4,6 +4,15 @@ namespace atp_tp_tetris
 {
     internal class Tetrominos
     {
+        // Cores
+        public const int CYAN = 1;
+        public const int BLUE = 2;
+        public const int ORANGE = 3;
+        public const int YELLOW = 4;
+        public const int GREEN = 5;
+        public const int PURPLE = 6;
+        public const int RED = 7;
+
         int[,] peca;
 
         public int[,] Peca
@@ -18,45 +27,45 @@ namespace atp_tp_tetris
                 case 'I':
                     peca = new int[,] {
                         { 0,0,0,0 },
-                        { 1,1,1,1 },
+                        { CYAN,CYAN,CYAN,CYAN},
                         { 0,0,0,0 },
                         { 0,0,0,0 }
                     };
                     break;
                 case 'J':
                     peca = new int[,] {
-                        { 1,0,0 },
-                        { 1,1,1 },
+                        { BLUE,0,0 },
+                        { BLUE,BLUE,BLUE },
                         { 0,0,0 }
                     };
                     break;
                 case 'L':
                     peca = new int[,] {
-                        { 0,0,1 },
-                        { 1,1,1 },
+                        { 0,0,ORANGE },
+                        { ORANGE,ORANGE,ORANGE },
                         { 0,0,0 },
                     }; break;
                 case 'O':
                     peca = new int[,] {
-                        { 1,1 },
-                        { 1,1 }
+                        { YELLOW,YELLOW },
+                        { YELLOW,YELLOW }
                     }; break;
                 case 'S':
                     peca = new int[,] {
-                        { 0,1,1 },
-                        { 1,1,0 },
+                        { 0,GREEN,GREEN },
+                        { GREEN,GREEN,0 },
                         { 0,0,0 },
                     }; break;
                 case 'T':
                     peca = new int[,] {
-                        { 0,1,0 },
-                        { 1,1,1 },
+                        { 0,PURPLE,0 },
+                        { PURPLE,PURPLE,PURPLE },
                         { 0,0,0 }
                     }; break;
                 case 'Z':
                     peca = new int[,] {
-                        { 1,1,0 },
-                        { 0,1,1 },
+                        { RED,RED,0 },
+                        { 0,RED,RED },
                         { 0,0,0 }
                     }; break;
                 default:
