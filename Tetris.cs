@@ -1,13 +1,19 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace atp_tp_tetris
 {
     internal class Tetris
     {
-        private const int FRAMES_PER_SECOND = 10;
-        private const int MILLI_SECONDS = 100;
-        private const int FRAME_TIME = MILLI_SECONDS / FRAMES_PER_SECOND;
+        private const double GAME_SPEED = 1;
+
+        private const double MS = 1000;
+
+        private const double FRAMES_PER_SECOND = 10;
+        private const double ENGINE_UPDATE_S = 1 / GAME_SPEED / FRAMES_PER_SECOND;
+        // FRAME_TIME
+        private const long ENGINE_UPDATE_MS = (long)(ENGINE_UPDATE_S * MS);
 
         private const int LINES = 20;
         private const int COLUMNS = 10;
@@ -30,6 +36,12 @@ namespace atp_tp_tetris
         bool pecaEstaCaindo = false;
 
         private bool needRender = true;
+        private long lastRender = 0;
+        private long nextRender = 0;
+        private Stopwatch watch;
+        private long renderDelta = 0;
+
+        private int DEFAULT_COOLDOWN = (int)Math.Round(1.0 / ENGINE_UPDATE_S, MidpointRounding.ToPositiveInfinity);
 
         private void ZerarTabuleiro()
         {
@@ -136,6 +148,7 @@ namespace atp_tp_tetris
 
         private void RemoverLinha(int linha)
         {
+            needRender = true;
             if (linha < 0 || linha > tabuleiro.GetLength(0) - 1) return;
             for (int j = linha; j > 0; j--)
             {
@@ -240,14 +253,13 @@ namespace atp_tp_tetris
             Console.WriteLine("Esc -> Pause");
         }
 
-
-
         private static void Pause()
         {
             // TODO: Criar menu
             // C -> Continuar()
             // R -> Reiniciar()
             // S/Q -> Sair()
+            Console.Write("\x1b[H\x1b[2J");
             Console.WriteLine("Jogo Pausado!");
             Console.WriteLine("Pressione enter para continuar!");
             Console.ReadLine();
@@ -262,6 +274,7 @@ namespace atp_tp_tetris
                     if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) != Colisao.NULA)
                     {
                         peca.Rotacionar90AntiHorario();
+                        return;
                     }
                     break;
                 case SentidoRotacao.ANTI_HORARIO_90:
@@ -269,9 +282,11 @@ namespace atp_tp_tetris
                     if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) != Colisao.NULA)
                     {
                         peca.Rotacionar90Horario();
+                        return;
                     }
                     break;
             }
+            needRender = true;
         }
 
         private void TentarMoverPeca(DirecaoMovimentacao direcao)
@@ -282,12 +297,14 @@ namespace atp_tp_tetris
                     if (VerificarColisao(pecaPosVertical, pecaPosHorizontal - 1, peca) != Colisao.HORIZONTAL)
                     {
                         pecaPosHorizontal--;
+                        needRender = true;
                     }
                     break;
                 case DirecaoMovimentacao.DIREITA:
                     if (VerificarColisao(pecaPosVertical, pecaPosHorizontal + 1, peca) != Colisao.HORIZONTAL)
                     {
                         pecaPosHorizontal++;
+                        needRender = true;
                     }
                     break;
             }
@@ -320,43 +337,54 @@ namespace atp_tp_tetris
 
         private void IniciarLogica()
         {
+            int cooldown = -1;
+
+            watch = Stopwatch.StartNew();
+            int sleepTime = 0;
             while (jogando)
             {
-                peca = new Tetrominos();
-                pecaPosVertical = POS_VERTICAL_INICIAL;
-                pecaPosHorizontal = CalcularPosHorizontalInicial(tabuleiro.GetLength(1), peca.Peca.GetLength(0));
-                pecaEstaCaindo = true;
-
                 VerificarAndRemoverLinhas();
 
-                for (int i = 0; pecaEstaCaindo; i++)
+                if (!pecaEstaCaindo)
                 {
-                    MostrarTabuleiro(true);
-                    if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) == Colisao.VERTICAL)
+                    peca = new Tetrominos();
+                    pecaPosVertical = POS_VERTICAL_INICIAL;
+                    pecaPosHorizontal = CalcularPosHorizontalInicial(tabuleiro.GetLength(1), peca.Peca.GetLength(0));
+                    pecaEstaCaindo = true;
+                    cooldown = DEFAULT_COOLDOWN + 1;
+                    needRender = true;
+                }
+
+                if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) == Colisao.VERTICAL)
+                {
+                    if (pecaPosVertical == POS_VERTICAL_INICIAL)
                     {
-                        if (pecaPosVertical == POS_VERTICAL_INICIAL)
-                        {
-                            jogando = false;
-                            pecaEstaCaindo = false;
-                            MostrarTabuleiro(true);
-                            FimDeJogo();
-                        }
-                        else
-                        {
-                            InserirPeca(pecaPosVertical - 1, pecaPosHorizontal, tabuleiro, peca);
-                            pecaEstaCaindo = false;
-                        }
+                        jogando = false;
                     }
                     else
                     {
-                        CopiarTabuleiro(tabuleiro, display);
-                        InserirPeca(pecaPosVertical, pecaPosHorizontal, display, peca);
+                        InserirPeca(pecaPosVertical - 1, pecaPosHorizontal, tabuleiro, peca);
+                        pecaEstaCaindo = false;
+                        // CONFIGURAR COMO TRUE DEPOIS
+                        needRender = false;
+                    }
+                }
+                else
+                {
+                    if (cooldown <= 0)
+                    {
                         pecaPosVertical++;
+                        cooldown = DEFAULT_COOLDOWN + 1;
+                        needRender = true;
+                    }
+                    else
+                    {
+                        cooldown--;
+                    }
 
-                        MostrarTabuleiro(true);
-                        for (int j = 0; j < FRAME_TIME; j++)
+                    // Boilerplate bracket to reduce git diff surface, will be removed in the next commit
+                    {
                         {
-                            Thread.Sleep(FRAME_TIME);
                             if (Console.KeyAvailable)
                             {
                                 switch (Console.ReadKey().Key)
@@ -376,10 +404,11 @@ namespace atp_tp_tetris
                                     case ConsoleKey.DownArrow:
                                         // TODO: Reset frame
                                         // TentarMoverPeca(DirecaoMovimentacao.BAIXO);
-                                        if (VerificarColisao(pecaPosVertical + 1, pecaPosHorizontal, peca) != Colisao.NULA)
+                                        if (VerificarColisao(pecaPosVertical + 1, pecaPosHorizontal, peca) == Colisao.NULA)
                                         {
                                             pecaPosVertical++;
-                                            j = FRAMES_PER_SECOND;
+                                            cooldown = DEFAULT_COOLDOWN;
+                                            needRender = true;
                                         }
                                         break;
                                     case ConsoleKey.Spacebar:
@@ -393,22 +422,39 @@ namespace atp_tp_tetris
                                                 colidiu = true;
                                                 InserirPeca(pecaPosVertical + a - 1, pecaPosHorizontal, tabuleiro, peca);
                                                 pecaEstaCaindo = false;
-                                                j = FRAMES_PER_SECOND;
                                             }
                                         }
+                                        needRender = true;
                                         break;
                                     case ConsoleKey.Escape:
                                         Pause();
+                                        needRender = true;
+                                        cooldown = DEFAULT_COOLDOWN;
                                         break;
                                 }
-                                CopiarTabuleiro(tabuleiro, display);
-                                InserirPeca(pecaPosVertical, pecaPosHorizontal, display, peca);
                             }
-                            MostrarTabuleiro(true);
                         }
                     }
+
+                    // Render
+                    CopiarTabuleiro(tabuleiro, display);
+                    InserirPeca(pecaPosVertical, pecaPosHorizontal, display, peca);
+
+                    MostrarTabuleiro();
+                    lastRender = watch.ElapsedMilliseconds;
+
+                    sleepTime = (int)(nextRender - lastRender);
+                    nextRender = lastRender + ENGINE_UPDATE_MS;
+
+                    if (sleepTime > 0)
+                        Thread.Sleep(sleepTime);
+                    else
+                        renderDelta = sleepTime;
                 }
             }
+
+            MostrarTabuleiro(true);
+            FimDeJogo();
         }
 
         private enum Colisao
