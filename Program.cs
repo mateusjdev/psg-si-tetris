@@ -217,9 +217,9 @@ namespace atp_tp_tetris
 
     class Tetris
     {
-        const int FRAMES_PER_SECOND = 10;
-        const int MILLI_SECONDS = 20;
-        const int FRAME_TIME = MILLI_SECONDS / FRAMES_PER_SECOND;
+        private const int FRAMES_PER_SECOND = 10;
+        private const int MILLI_SECONDS = 100;
+        private const int FRAME_TIME = MILLI_SECONDS / FRAMES_PER_SECOND;
 
         private const int LINES = 20;
         private const int COLUMNS = 10;
@@ -228,6 +228,7 @@ namespace atp_tp_tetris
         private const int COLISAO_VERTICAL = 1;
         private const int COLISAO_HORIZONTAL = 2;
 
+        private const int LINHA_INICIAL = -1;
         private const char DIV = '|';
 
         private int[,] tabuleiro = new int[LINES, COLUMNS];
@@ -362,7 +363,7 @@ namespace atp_tp_tetris
                 int k = pos_peca_lin + peca.HitboxVerticalInicio();
                 for (int j = peca.HitboxVerticalInicio(); j <= peca.HitboxVerticalFim(); j++, k++)
                 {
-                    if (k >= 0 && k + peca.HitboxVerticalFim() <= LINES + 1)
+                    if (k >= 0)
                     {
                         if (peca.Peca[j, i] > 0)
                             _tabuleiro[k, pos_peca_col] = 1;
@@ -399,6 +400,17 @@ namespace atp_tp_tetris
             jogador.SalvarPontuacao("scores.txt");
         }
 
+        private void ImprimirControles()
+        {
+            Console.WriteLine("Controles:");
+            Console.WriteLine("Seta para Esquerda -> Virar peça no sentido Anti-Horário");
+            Console.WriteLine("Seta para Direita -> Virar peça no sentido Horário");
+            Console.WriteLine("Letra A -> Mover peça para esquerda");
+            Console.WriteLine("Letra D -> Mover peça para direita");
+            Console.WriteLine("Espaço -> Colocar peça na posição final (Cair até o final)");
+            Console.WriteLine("Esc -> Pause");
+        }
+
         public void Iniciar()
         {
             string nome = "";
@@ -408,106 +420,113 @@ namespace atp_tp_tetris
                 nome = Console.ReadLine();
             } while (nome.Length <= 0);
 
+            ImprimirControles();
             Console.WriteLine("Pressione qualquer tecla para iniciar!");
             Console.ReadKey();
 
             ZerarTabuleiro();
             jogador = new Jogador(nome, 0);
-            const int INSERT_LIN = -1;
 
+            IniciarLogica();
+        }
+
+        private void IniciarLogica()
+        {
             bool jogando = true;
             while (jogando)
             {
                 Tetrominos nova_peca = new Tetrominos(Tetrominos.EscolherFormatoAleatorio());
-                int VERTICAL_LENGHT = tabuleiro.GetLength(1);
-                int insert_linha = INSERT_LIN;
-                int insert_col = (VERTICAL_LENGHT - nova_peca.Peca.GetLength(0)) / 2;
+                int posLinha = LINHA_INICIAL;
+                int posColuna = (tabuleiro.GetLength(1) - nova_peca.Peca.GetLength(0)) / 2;
                 bool pecaCaindo = true;
                 for (int i = 0; pecaCaindo; i++)
                 {
-                    if (VerificarColisao(insert_linha, insert_col, nova_peca) == COLISAO_VERTICAL)
+                    VerificarAndRemoverLinhas();
+                    MostrarTabuleiro();
+                    if (VerificarColisao(posLinha, posColuna, nova_peca) == COLISAO_VERTICAL)
                     {
-                        if (insert_linha == INSERT_LIN)
+                        if (posLinha == LINHA_INICIAL)
                         {
                             jogando = false;
                             MostrarTabuleiro();
                             FimDeJogo();
                         }
-                        InserirPeca(insert_linha - 1, insert_col, tabuleiro, nova_peca);
-                        pecaCaindo = false;
+                        else
+                        {
+                            InserirPeca(posLinha - 1, posColuna, tabuleiro, nova_peca);
+                            pecaCaindo = false;
+                        }
                     }
                     else
                     {
                         ResetarMatrizDisplay();
-                        InserirPeca(insert_linha, insert_col, display, nova_peca);
-                        insert_linha++;
-                    }
-                    MostrarTabuleiro();
+                        InserirPeca(posLinha, posColuna, display, nova_peca);
+                        posLinha++;
 
-                    for (int j = 0; j < FRAME_TIME; j++)
-                    {
-                        VerificarAndRemoverLinhas();
-                        Thread.Sleep(FRAME_TIME);
-                        if (Console.KeyAvailable)
+                        MostrarTabuleiro();
+                        for (int j = 0; j < FRAME_TIME; j++)
                         {
-                            var key = Console.ReadKey();
-                            switch (key.Key)
+                            Thread.Sleep(FRAME_TIME);
+                            if (Console.KeyAvailable)
                             {
-                                case ConsoleKey.LeftArrow:
-                                    nova_peca.Rotacionar90AntiHorario();
-                                    if (VerificarColisao(insert_linha, insert_col, nova_peca) != SEM_COLISAO)
-                                    {
-                                        nova_peca.Rotacionar90Horario();
-                                    }
-                                    break;
-                                case ConsoleKey.RightArrow:
-                                    nova_peca.Rotacionar90Horario();
-                                    if (VerificarColisao(insert_linha, insert_col, nova_peca) != SEM_COLISAO)
-                                    {
+                                var key = Console.ReadKey();
+                                switch (key.Key)
+                                {
+                                    case ConsoleKey.LeftArrow:
                                         nova_peca.Rotacionar90AntiHorario();
-                                    }
-                                    break;
-                                case ConsoleKey.A:
-                                    if (VerificarColisao(insert_linha, insert_col - 1, nova_peca) != COLISAO_HORIZONTAL)
-                                    {
-                                        insert_col--;
-                                    }
-                                    break;
-                                case ConsoleKey.D:
-                                    if (VerificarColisao(insert_linha, insert_col + 1, nova_peca) != COLISAO_HORIZONTAL)
-                                    {
-                                        insert_col++;
-                                    }
-                                    break;
-                                case ConsoleKey.DownArrow:
-                                    if (VerificarColisao(insert_linha + 1, insert_col, nova_peca) != SEM_COLISAO)
-                                    {
-                                        insert_linha++;
-                                        j = FRAMES_PER_SECOND;
-                                    }
-                                    break;
-                                case ConsoleKey.Spacebar:
-                                    bool colidiu = false;
-                                    for (int a = 0; !colidiu; a++)
-                                    {
-                                        if (VerificarColisao(insert_linha + a, insert_col, nova_peca) != SEM_COLISAO)
+                                        if (VerificarColisao(posLinha, posColuna, nova_peca) != SEM_COLISAO)
                                         {
-                                            colidiu = true;
-                                            InserirPeca(insert_linha + a - 1, insert_col, tabuleiro, nova_peca);
-                                            pecaCaindo = false;
+                                            nova_peca.Rotacionar90Horario();
+                                        }
+                                        break;
+                                    case ConsoleKey.RightArrow:
+                                        nova_peca.Rotacionar90Horario();
+                                        if (VerificarColisao(posLinha, posColuna, nova_peca) != SEM_COLISAO)
+                                        {
+                                            nova_peca.Rotacionar90AntiHorario();
+                                        }
+                                        break;
+                                    case ConsoleKey.A:
+                                        if (VerificarColisao(posLinha, posColuna - 1, nova_peca) != COLISAO_HORIZONTAL)
+                                        {
+                                            posColuna--;
+                                        }
+                                        break;
+                                    case ConsoleKey.D:
+                                        if (VerificarColisao(posLinha, posColuna + 1, nova_peca) != COLISAO_HORIZONTAL)
+                                        {
+                                            posColuna++;
+                                        }
+                                        break;
+                                    case ConsoleKey.DownArrow:
+                                        if (VerificarColisao(posLinha + 1, posColuna, nova_peca) != SEM_COLISAO)
+                                        {
+                                            posLinha++;
                                             j = FRAMES_PER_SECOND;
                                         }
-                                    }
-                                    break;
-                                case ConsoleKey.Escape:
-                                    Console.WriteLine("Jogo Pausado!");
-                                    Console.WriteLine("Pressione enter para continuar!");
-                                    Console.ReadLine();
-                                    break;
-                            }
-
-                            ResetarMatrizDisplay();
-                            InserirPeca(insert_linha, insert_col, display, nova_peca);
+                                        break;
+                                    case ConsoleKey.Spacebar:
+                                        bool colidiu = false;
+                                        for (int a = 0; !colidiu; a++)
+                                        {
+                                            if (VerificarColisao(posLinha + a, posColuna, nova_peca) != SEM_COLISAO)
+                                            {
+                                                colidiu = true;
+                                                InserirPeca(posLinha + a - 1, posColuna, tabuleiro, nova_peca);
+                                                pecaCaindo = false;
+                                                j = FRAMES_PER_SECOND;
+                                            }
+                                        }
+                                        break;
+                                    case ConsoleKey.Escape:
+                                        Console.WriteLine("Jogo Pausado!");
+                                        Console.WriteLine("Pressione enter para continuar!");
+                                        Console.ReadLine();
+                                        break;
+                                }
+                                ResetarMatrizDisplay();
+                                InserirPeca(posLinha, posColuna, display, nova_peca);
+                            }                            
                             MostrarTabuleiro();
                         }
                     }
