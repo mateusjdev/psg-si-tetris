@@ -19,7 +19,6 @@ namespace atp_tp_tetris
         {
             switch (formato)
             {
-                // I = XXXX
                 case 'I':
                     peca = new int[,] {
                         { 0,0,0,0 },
@@ -28,9 +27,6 @@ namespace atp_tp_tetris
                         { 0,0,0,0 }
                     };
                     break;
-                // J =  X
-                //      X
-                //     XX
                 case 'J':
                     peca = new int[,] {
                         { 1,0,0 },
@@ -38,40 +34,29 @@ namespace atp_tp_tetris
                         { 0,0,0 }
                     };
                     break;
-                // L = X
-                //     X
-                //     XX
                 case 'L':
                     peca = new int[,] {
                         { 0,0,1 },
                         { 1,1,1 },
                         { 0,0,0 },
                     }; break;
-                // O = XX
-                //     XX
                 case 'O':
                     peca = new int[,] {
                         { 1,1 },
                         { 1,1 }
                     }; break;
-                // S =  XX
-                //     XX
                 case 'S':
                     peca = new int[,] {
                         { 0,1,1 },
                         { 1,1,0 },
                         { 0,0,0 },
                     }; break;
-                // T = XXX
-                //      X
                 case 'T':
                     peca = new int[,] {
                         { 0,1,0 },
                         { 1,1,1 },
                         { 0,0,0 }
                     }; break;
-                // Z = XX
-                //      XX
                 case 'Z':
                     peca = new int[,] {
                         { 1,1,0 },
@@ -352,11 +337,7 @@ namespace atp_tp_tetris
             int hitbox_right = peca.HitboxHorizontalFim();
 
 
-            // Console.WriteLine($"Top: {hitbox_top}, Bottom: {hitbox_bottom}, Left: {hitbox_left}, Right: {hitbox_right}");
-            // peca.Visualizar();
-            // Console.ReadLine();
 
-            // Se a boarda do topo da peça esta fora da matriz retorna true
             if (pos_peca_lin < -1 || pos_peca_lin + hitbox_bottom >= LINES)
             {
                 return COLISAO_VERTICAL;
@@ -433,15 +414,9 @@ namespace atp_tp_tetris
 
         private void InserirPeca(int pos_peca_lin, int pos_peca_col, int[,] _tabuleiro, Tetrominos peca)
         {
-            // Console.WriteLine($"lin: {pos_peca_lin}");
-            // Console.WriteLine($"col: {pos_peca_col}");
-            // Console.WriteLine($"{}");
             pos_peca_col += peca.HitboxHorizontalInicio();
             for (int i = peca.HitboxHorizontalInicio(); i <= peca.HitboxHorizontalFim(); i++, pos_peca_col++)
             {
-                // Console.WriteLine($"lin: {pos_peca_lin}, col: {pos_peca_col}, i: {i}");
-                // peca.Visualizar();
-                // Console.ReadLine();
                 int k = pos_peca_lin + peca.HitboxVerticalInicio();
                 for (int j = peca.HitboxVerticalInicio(); j <= peca.HitboxVerticalFim(); j++, k++)
                 {
@@ -458,17 +433,9 @@ namespace atp_tp_tetris
                     }
                 }
             }
-            // Console.WriteLine(pos_peca_col);
-            // Console.ReadLine();
         }
 
-        // static void RotacionarEsquerda()
-        // static void RotacionarDireita()
-        // static void Abaixar()
-        // static void Cair()
 
-        // VerificarLinhas -> Verifica se há uma linha com tudo 0 
-        // VerificarLinhas -> Mover linhas para baixo (se tem uma linha com 1 e abaixo com 0, descer linha)
 
         private void ResetarMatrizDisplay()
         {
@@ -518,12 +485,10 @@ namespace atp_tp_tetris
                 Tetrominos nova_peca = new Tetrominos(Tetrominos.EscolherFormatoAleatorio());
                 int VERTICAL_LENGHT = tabuleiro.GetLength(1);
                 int insert_linha = INSERT_LIN;
-                // TODO: Verificar se o arredondamento é para baixo.
                 int insert_col = (VERTICAL_LENGHT - nova_peca.Peca.GetLength(0)) / 2;
                 bool pecaCaindo = true;
                 for (int i = 0; pecaCaindo; i++)
                 {
-                    // Console.WriteLine($"{insert_linha}, {insert_col}");
                     if (VerificarColisao(insert_linha, insert_col, nova_peca) == COLISAO_VERTICAL)
                     {
                         if (insert_linha == INSERT_LIN)
@@ -532,14 +497,12 @@ namespace atp_tp_tetris
                             MostrarTabuleiro();
                             FimDeJogo();
                         }
-                        // Console.WriteLine("Colisão");
                         InserirPeca(insert_linha - 1, insert_col, tabuleiro, nova_peca);
                         pecaCaindo = false;
                     }
                     else
                     {
                         ResetarMatrizDisplay();
-                        // Console.WriteLine("Pode continuar chefe!");
                         InserirPeca(insert_linha, insert_col, display, nova_peca);
                         insert_linha++;
                     }
@@ -548,7 +511,6 @@ namespace atp_tp_tetris
                     const int FRAMES_PER_SECOND = 10;
                     const int MILLI_SECONDS = 20;
                     const int FRAME_TIME = MILLI_SECONDS / FRAMES_PER_SECOND;
-                    // 10 FPS
                     for (int j = 0; j < FRAMES_PER_SECOND; j++)
                     {
                         VerificarAndRemoverLinhas();
@@ -559,7 +521,6 @@ namespace atp_tp_tetris
                             switch (key.Key)
                             {
                                 case ConsoleKey.LeftArrow:
-                                    // Console.WriteLine("fn Rotacionar Peça Sentido Anti-Horario");
                                     nova_peca.Rotacionar90AntiHorario();
                                     if (VerificarColisao(insert_linha, insert_col, nova_peca) != SEM_COLISAO)
                                     {
@@ -567,7 +528,6 @@ namespace atp_tp_tetris
                                     }
                                     break;
                                 case ConsoleKey.RightArrow:
-                                    // Console.WriteLine("fn Rotacionar Peça Sentido Horario");
                                     nova_peca.Rotacionar90Horario();
                                     if (VerificarColisao(insert_linha, insert_col, nova_peca) != SEM_COLISAO)
                                     {
@@ -575,26 +535,24 @@ namespace atp_tp_tetris
                                     }
                                     break;
                                 case ConsoleKey.A:
-                                    // Console.WriteLine("fn Mover para Esqueda");
                                     if (VerificarColisao(insert_linha, insert_col - 1, nova_peca) != COLISAO_HORIZONTAL)
                                     {
                                         insert_col--;
                                     }
                                     break;
                                 case ConsoleKey.D:
-                                    // Console.WriteLine("fn Mover para Direita");
                                     if (VerificarColisao(insert_linha, insert_col + 1, nova_peca) != COLISAO_HORIZONTAL)
                                     {
                                         insert_col++;
                                     }
                                     break;
                                 case ConsoleKey.DownArrow:
-                                    if (VerificarColisao(insert_linha + 1, insert_col, nova_peca) != SEM_COLISAO) {
+                                    if (VerificarColisao(insert_linha + 1, insert_col, nova_peca) != SEM_COLISAO)
+                                    {
                                         insert_linha++;
                                         j = FRAMES_PER_SECOND;
                                     }
-                                        // Console.WriteLine("fn MoverBaixo");
-                                        break;
+                                    break;
                                 case ConsoleKey.Spacebar:
                                     bool colidiu = false;
                                     for (int a = 0; !colidiu; a++)
@@ -607,7 +565,6 @@ namespace atp_tp_tetris
                                             j = FRAMES_PER_SECOND;
                                         }
                                     }
-                                    // Console.WriteLine("fn Cair");
                                     break;
                                 case ConsoleKey.Escape:
                                     Console.WriteLine("Jogo Pausado!");
