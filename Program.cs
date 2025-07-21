@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -204,7 +204,7 @@ namespace atp_tp_tetris
             try
             {
                 StreamWriter sw = new StreamWriter(caminhoArquivo, true, Encoding.UTF8);
-                sw.Write($"{nome};{pontuacao}");
+                sw.WriteLine($"{nome};{pontuacao}");
                 sw.Close();
                 Console.WriteLine("Pontuação salva!");
             }
@@ -217,6 +217,10 @@ namespace atp_tp_tetris
 
     class Tetris
     {
+        const int FRAMES_PER_SECOND = 10;
+        const int MILLI_SECONDS = 20;
+        const int FRAME_TIME = MILLI_SECONDS / FRAMES_PER_SECOND;
+
         private const int LINES = 20;
         private const int COLUMNS = 10;
 
@@ -440,10 +444,7 @@ namespace atp_tp_tetris
                     }
                     MostrarTabuleiro();
 
-                    const int FRAMES_PER_SECOND = 10;
-                    const int MILLI_SECONDS = 20;
-                    const int FRAME_TIME = MILLI_SECONDS / FRAMES_PER_SECOND;
-                    for (int j = 0; j < FRAMES_PER_SECOND; j++)
+                    for (int j = 0; j < FRAME_TIME; j++)
                     {
                         VerificarAndRemoverLinhas();
                         Thread.Sleep(FRAME_TIME);

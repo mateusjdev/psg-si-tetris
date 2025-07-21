@@ -1,0 +1,9 @@
+Para alterar a velocidade alterar a constante MILLI_SECONDS na classe 'Tetris': Esse é o tempo entre cada "descida" da peça.
+
+Controles:
+Seta para Esquerda -> Virar peça no sentido Anti-Horário
+Seta para Direita -> Virar peça no sentido Horário
+Letra A -> Mover peça para esquerda
+Letra D -> Mover peça para direita
+Espaço -> Colocar peça na posição final (Cair até o final)
+Esc -> Pause
