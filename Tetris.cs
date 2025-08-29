@@ -24,6 +24,8 @@ namespace atp_tp_tetris
 
         private Jogador jogador;
 
+        private bool jogando = false;
+
         private bool needRender = true;
 
         private void ZerarTabuleiro()
@@ -252,18 +254,24 @@ namespace atp_tp_tetris
             ZerarTabuleiro();
             jogador = new Jogador(nome, 0);
 
+            jogando = true;
             IniciarLogica();
         }
 
         private void IniciarLogica()
         {
-            bool jogando = true;
+            Tetrominos nova_peca = null;
+            int posLinha = -1;
+            int posColuna = -1;
+            bool pecaCaindo = false;
+
             while (jogando)
             {
-                Tetrominos nova_peca = new Tetrominos(Tetrominos.EscolherFormatoAleatorio());
-                int posLinha = LINHA_INICIAL;
-                int posColuna = (tabuleiro.GetLength(1) - nova_peca.Peca.GetLength(0)) / 2;
-                bool pecaCaindo = true;
+                nova_peca = new Tetrominos(Tetrominos.EscolherFormatoAleatorio());
+                posLinha = LINHA_INICIAL;
+                posColuna = (tabuleiro.GetLength(1) - nova_peca.Peca.GetLength(0)) / 2;
+                pecaCaindo = true;
+
                 for (int i = 0; pecaCaindo; i++)
                 {
                     VerificarAndRemoverLinhas();
