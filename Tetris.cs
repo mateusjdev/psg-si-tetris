@@ -193,13 +193,15 @@ namespace atp_tp_tetris
             }
         }
 
-        private void ResetarMatrizDisplay()
+        private static void CopiarTabuleiro(int[,] source, int[,] destination)
         {
-            for (int i = 0; i < tabuleiro.GetLength(0); i++)
+            if (source.GetLength(0) != destination.GetLength(0)) return;
+            if (source.GetLength(1) != destination.GetLength(1)) return;
+            for (int i = 0; i < source.GetLength(0); i++)
             {
-                for (int j = 0; j < tabuleiro.GetLength(1); j++)
+                for (int j = 0; j < source.GetLength(1); j++)
                 {
-                    display[i, j] = tabuleiro[i, j];
+                    destination[i, j] = source[i, j];
                 }
             }
         }
@@ -283,7 +285,7 @@ namespace atp_tp_tetris
                     }
                     else
                     {
-                        ResetarMatrizDisplay();
+                        CopiarTabuleiro(tabuleiro, display);
                         InserirPeca(posLinha, posColuna, display, nova_peca);
                         posLinha++;
 
@@ -348,7 +350,7 @@ namespace atp_tp_tetris
                                         Console.ReadLine();
                                         break;
                                 }
-                                ResetarMatrizDisplay();
+                                CopiarTabuleiro(tabuleiro, display);
                                 InserirPeca(posLinha, posColuna, display, nova_peca);
                             }
                             MostrarTabuleiro(true);
