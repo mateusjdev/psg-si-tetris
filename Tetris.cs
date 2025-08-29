@@ -24,6 +24,8 @@ namespace atp_tp_tetris
 
         private Jogador jogador;
 
+        private bool needRender = true;
+
         private void ZerarTabuleiro()
         {
             for (int i = 0; i < tabuleiro.GetLength(0); i++)
@@ -35,8 +37,10 @@ namespace atp_tp_tetris
             }
         }
 
-        public void MostrarTabuleiro()
+        public void MostrarTabuleiro(bool forceRender = false)
         {
+            if (!needRender && !forceRender) return;
+
             Console.Write("\u001b[H");
             for (int i = 0; i < display.GetLength(0); i++)
             {
@@ -45,7 +49,7 @@ namespace atp_tp_tetris
                 {
                     if (display[i, j] > 0)
                     {
-                        switch(display[i, j])
+                        switch (display[i, j])
                         {
                             case Tetrominos.CYAN:
                                 Console.Write("\u001b[46;36mX\u001b[0m");
@@ -87,6 +91,7 @@ namespace atp_tp_tetris
                 Console.WriteLine();
             }
             Console.WriteLine($"Pontuação: {jogador.Pontuacao}");
+            needRender = false;
         }
 
         private int VerificarColisao(int pos_peca_lin, int pos_peca_col, Tetrominos peca)
@@ -260,14 +265,14 @@ namespace atp_tp_tetris
                 for (int i = 0; pecaCaindo; i++)
                 {
                     VerificarAndRemoverLinhas();
-                    MostrarTabuleiro();
+                    MostrarTabuleiro(true);
                     if (VerificarColisao(posLinha, posColuna, nova_peca) == COLISAO_VERTICAL)
                     {
                         if (posLinha == LINHA_INICIAL)
                         {
                             jogando = false;
                             pecaCaindo = false;
-                            MostrarTabuleiro();
+                            MostrarTabuleiro(true);
                             FimDeJogo();
                         }
                         else
@@ -282,7 +287,7 @@ namespace atp_tp_tetris
                         InserirPeca(posLinha, posColuna, display, nova_peca);
                         posLinha++;
 
-                        MostrarTabuleiro();
+                        MostrarTabuleiro(true);
                         for (int j = 0; j < FRAME_TIME; j++)
                         {
                             Thread.Sleep(FRAME_TIME);
@@ -346,7 +351,7 @@ namespace atp_tp_tetris
                                 ResetarMatrizDisplay();
                                 InserirPeca(posLinha, posColuna, display, nova_peca);
                             }
-                            MostrarTabuleiro();
+                            MostrarTabuleiro(true);
                         }
                     }
                 }
