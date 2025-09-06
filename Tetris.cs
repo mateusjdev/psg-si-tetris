@@ -214,7 +214,7 @@ namespace atp_tp_tetris
             {
                 xPecaInicial = 0 - posPecaColuna;
                 posPecaColuna += xPecaInicial;
-            }            
+            }
             int xPeca, xVetor;
             for (int yVetor = posPecaLinha; yVetor <= yEnd; yVetor++, yPeca++)
             {
@@ -399,57 +399,52 @@ namespace atp_tp_tetris
                         cooldown--;
                     }
 
-                    // Boilerplate bracket to reduce git diff surface, will be removed in the next commit
+                    if (Console.KeyAvailable)
                     {
+                        switch (Console.ReadKey().Key)
                         {
-                            if (Console.KeyAvailable)
-                            {
-                                switch (Console.ReadKey().Key)
+                            case ConsoleKey.LeftArrow:
+                                TentarRotacionarPeca(SentidoRotacao.ANTI_HORARIO_90);
+                                break;
+                            case ConsoleKey.RightArrow:
+                                TentarRotacionarPeca(SentidoRotacao.HORARIO_90);
+                                break;
+                            case ConsoleKey.A:
+                                TentarMoverPeca(DirecaoMovimentacao.ESQUERDA);
+                                break;
+                            case ConsoleKey.D:
+                                TentarMoverPeca(DirecaoMovimentacao.DIREITA);
+                                break;
+                            case ConsoleKey.DownArrow:
+                                // TODO: Reset frame
+                                // TentarMoverPeca(DirecaoMovimentacao.BAIXO);
+                                if (!EstaEmColisao(pecaPosVertical + 1, pecaPosHorizontal, peca))
                                 {
-                                    case ConsoleKey.LeftArrow:
-                                        TentarRotacionarPeca(SentidoRotacao.ANTI_HORARIO_90);
-                                        break;
-                                    case ConsoleKey.RightArrow:
-                                        TentarRotacionarPeca(SentidoRotacao.HORARIO_90);
-                                        break;
-                                    case ConsoleKey.A:
-                                        TentarMoverPeca(DirecaoMovimentacao.ESQUERDA);
-                                        break;
-                                    case ConsoleKey.D:
-                                        TentarMoverPeca(DirecaoMovimentacao.DIREITA);
-                                        break;
-                                    case ConsoleKey.DownArrow:
-                                        // TODO: Reset frame
-                                        // TentarMoverPeca(DirecaoMovimentacao.BAIXO);
-                                        if (!EstaEmColisao(pecaPosVertical + 1, pecaPosHorizontal, peca))
-                                        {
-                                            pecaPosVertical++;
-                                            cooldown = DEFAULT_COOLDOWN;
-                                            needRender = true;
-                                        }
-                                        break;
-                                    case ConsoleKey.Spacebar:
-                                        // TODO: Reset frame
-                                        // TentarMoverPeca(DirecaoMovimentacao.FUNDO);
-                                        bool colidiu = false;
-                                        for (int a = 0; !colidiu; a++)
-                                        {
-                                            if (EstaEmColisao(pecaPosVertical + a, pecaPosHorizontal, peca))
-                                            {
-                                                colidiu = true;
-                                                InserirPeca(pecaPosVertical + a - 1, pecaPosHorizontal, tabuleiro, peca);
-                                                pecaEstaCaindo = false;
-                                            }
-                                        }
-                                        needRender = true;
-                                        break;
-                                    case ConsoleKey.Escape:
-                                        Pause();
-                                        needRender = true;
-                                        cooldown = DEFAULT_COOLDOWN;
-                                        break;
+                                    pecaPosVertical++;
+                                    cooldown = DEFAULT_COOLDOWN;
+                                    needRender = true;
                                 }
-                            }
+                                break;
+                            case ConsoleKey.Spacebar:
+                                // TODO: Reset frame
+                                // TentarMoverPeca(DirecaoMovimentacao.FUNDO);
+                                bool colidiu = false;
+                                for (int a = 0; !colidiu; a++)
+                                {
+                                    if (EstaEmColisao(pecaPosVertical + a, pecaPosHorizontal, peca))
+                                    {
+                                        colidiu = true;
+                                        InserirPeca(pecaPosVertical + a - 1, pecaPosHorizontal, tabuleiro, peca);
+                                        pecaEstaCaindo = false;
+                                    }
+                                }
+                                needRender = true;
+                                break;
+                            case ConsoleKey.Escape:
+                                Pause();
+                                needRender = true;
+                                cooldown = DEFAULT_COOLDOWN;
+                                break;
                         }
                     }
 
