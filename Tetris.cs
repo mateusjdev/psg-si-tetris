@@ -12,10 +12,6 @@ namespace atp_tp_tetris
         private const int LINES = 20;
         private const int COLUMNS = 10;
 
-        private const int SEM_COLISAO = 0;
-        private const int COLISAO_VERTICAL = 1;
-        private const int COLISAO_HORIZONTAL = 2;
-
         // Posicao no vetor em que novas pecas se iniciam:
         // A Comparacao se inicia antes do inicio do vetor do tabuleiro
         private const int POS_VERTICAL_INICIAL = -1;
@@ -103,7 +99,7 @@ namespace atp_tp_tetris
             needRender = false;
         }
 
-        private int VerificarColisao(int pos_peca_lin, int pos_peca_col, Tetrominos peca)
+        private Colisao VerificarColisao(int pos_peca_lin, int pos_peca_col, Tetrominos peca)
         {
             int hitbox_top = peca.HitboxVerticalInicio();
             int hitbox_bottom = peca.HitboxVerticalFim();
@@ -112,12 +108,12 @@ namespace atp_tp_tetris
 
             if (pos_peca_lin < -1 || pos_peca_lin + hitbox_bottom >= LINES)
             {
-                return COLISAO_VERTICAL;
+                return Colisao.VERTICAL;
             }
 
             if (pos_peca_col + hitbox_left < 0 || pos_peca_col + hitbox_right >= COLUMNS)
             {
-                return COLISAO_HORIZONTAL;
+                return Colisao.HORIZONTAL;
             }
 
             pos_peca_col += hitbox_left;
@@ -130,13 +126,13 @@ namespace atp_tp_tetris
                     {
                         if (tabuleiro[k, pos_peca_col] > 0 && peca.Peca[j, i] > 0)
                         {
-                            return COLISAO_VERTICAL;
+                            return Colisao.VERTICAL;
                         }
                     }
                 }
             }
 
-            return SEM_COLISAO;
+            return Colisao.NULA;
         }
 
         private void RemoverLinha(int linha)
@@ -283,7 +279,7 @@ namespace atp_tp_tetris
                 {
                     VerificarAndRemoverLinhas();
                     MostrarTabuleiro(true);
-                    if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) == COLISAO_VERTICAL)
+                    if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) == Colisao.VERTICAL)
                     {
                         if (pecaPosVertical == POS_VERTICAL_INICIAL)
                         {
@@ -315,32 +311,32 @@ namespace atp_tp_tetris
                                 {
                                     case ConsoleKey.LeftArrow:
                                         peca.Rotacionar90AntiHorario();
-                                        if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) != SEM_COLISAO)
+                                        if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) != Colisao.NULA)
                                         {
                                             peca.Rotacionar90Horario();
                                         }
                                         break;
                                     case ConsoleKey.RightArrow:
                                         peca.Rotacionar90Horario();
-                                        if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) != SEM_COLISAO)
+                                        if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) != Colisao.NULA)
                                         {
                                             peca.Rotacionar90AntiHorario();
                                         }
                                         break;
                                     case ConsoleKey.A:
-                                        if (VerificarColisao(pecaPosVertical, pecaPosHorizontal - 1, peca) != COLISAO_HORIZONTAL)
+                                        if (VerificarColisao(pecaPosVertical, pecaPosHorizontal - 1, peca) != Colisao.HORIZONTAL)
                                         {
                                             pecaPosHorizontal--;
                                         }
                                         break;
                                     case ConsoleKey.D:
-                                        if (VerificarColisao(pecaPosVertical, pecaPosHorizontal + 1, peca) != COLISAO_HORIZONTAL)
+                                        if (VerificarColisao(pecaPosVertical, pecaPosHorizontal + 1, peca) != Colisao.HORIZONTAL)
                                         {
                                             pecaPosHorizontal++;
                                         }
                                         break;
                                     case ConsoleKey.DownArrow:
-                                        if (VerificarColisao(pecaPosVertical + 1, pecaPosHorizontal, peca) != SEM_COLISAO)
+                                        if (VerificarColisao(pecaPosVertical + 1, pecaPosHorizontal, peca) != Colisao.NULA)
                                         {
                                             pecaPosVertical++;
                                             j = FRAMES_PER_SECOND;
@@ -350,7 +346,7 @@ namespace atp_tp_tetris
                                         bool colidiu = false;
                                         for (int a = 0; !colidiu; a++)
                                         {
-                                            if (VerificarColisao(pecaPosVertical + a, pecaPosHorizontal, peca) != SEM_COLISAO)
+                                            if (VerificarColisao(pecaPosVertical + a, pecaPosHorizontal, peca) != Colisao.NULA)
                                             {
                                                 colidiu = true;
                                                 InserirPeca(pecaPosVertical + a - 1, pecaPosHorizontal, tabuleiro, peca);
@@ -373,6 +369,10 @@ namespace atp_tp_tetris
                     }
                 }
             }
+        }
+        private enum Colisao
+        {
+            NULA, HORIZONTAL, VERTICAL
         }
     }
 }
