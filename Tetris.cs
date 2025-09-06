@@ -110,7 +110,7 @@ namespace atp_tp_tetris
             needRender = false;
         }
 
-        private Colisao VerificarColisao(int posPecaLinha, int posPecaColuna, Tetrominos peca)
+        private bool EstaEmColisao(int posPecaLinha, int posPecaColuna, Tetrominos peca)
         {
             int hitboxTop = peca.HitboxVerticalInicio();
             int hitboxBottom = peca.HitboxVerticalFim();
@@ -119,12 +119,12 @@ namespace atp_tp_tetris
 
             if (posPecaLinha < -1 || posPecaLinha + hitboxBottom >= LINES)
             {
-                return Colisao.VERTICAL;
+                return true;
             }
 
             if (posPecaColuna + hitboxLeft < 0 || posPecaColuna + hitboxRight >= COLUMNS)
             {
-                return Colisao.HORIZONTAL;
+                return true;
             }
 
             posPecaColuna += hitboxLeft;
@@ -137,13 +137,13 @@ namespace atp_tp_tetris
                     {
                         if (tabuleiro[k, posPecaColuna] > 0 && peca.Peca[j, i] > 0)
                         {
-                            return Colisao.VERTICAL;
+                            return true;
                         }
                     }
                 }
             }
 
-            return Colisao.NULA;
+            return false;
         }
 
         private void RemoverLinha(int linha)
@@ -288,7 +288,7 @@ namespace atp_tp_tetris
             {
                 case SentidoRotacao.HORARIO_90:
                     peca.Rotacionar90Horario();
-                    if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) != Colisao.NULA)
+                    if (EstaEmColisao(pecaPosVertical, pecaPosHorizontal, peca))
                     {
                         peca.Rotacionar90AntiHorario();
                         return;
@@ -296,7 +296,7 @@ namespace atp_tp_tetris
                     break;
                 case SentidoRotacao.ANTI_HORARIO_90:
                     peca.Rotacionar90AntiHorario();
-                    if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) != Colisao.NULA)
+                    if (EstaEmColisao(pecaPosVertical, pecaPosHorizontal, peca))
                     {
                         peca.Rotacionar90Horario();
                         return;
@@ -311,14 +311,14 @@ namespace atp_tp_tetris
             switch (direcao)
             {
                 case DirecaoMovimentacao.ESQUERDA:
-                    if (VerificarColisao(pecaPosVertical, pecaPosHorizontal - 1, peca) != Colisao.HORIZONTAL)
+                    if (!EstaEmColisao(pecaPosVertical, pecaPosHorizontal - 1, peca))
                     {
                         pecaPosHorizontal--;
                         needRender = true;
                     }
                     break;
                 case DirecaoMovimentacao.DIREITA:
-                    if (VerificarColisao(pecaPosVertical, pecaPosHorizontal + 1, peca) != Colisao.HORIZONTAL)
+                    if (!EstaEmColisao(pecaPosVertical, pecaPosHorizontal + 1, peca))
                     {
                         pecaPosHorizontal++;
                         needRender = true;
@@ -372,7 +372,7 @@ namespace atp_tp_tetris
                     needRender = true;
                 }
 
-                if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) == Colisao.VERTICAL)
+                if (EstaEmColisao(pecaPosVertical, pecaPosHorizontal, peca))
                 {
                     if (pecaPosVertical == POS_VERTICAL_INICIAL)
                     {
@@ -421,7 +421,7 @@ namespace atp_tp_tetris
                                     case ConsoleKey.DownArrow:
                                         // TODO: Reset frame
                                         // TentarMoverPeca(DirecaoMovimentacao.BAIXO);
-                                        if (VerificarColisao(pecaPosVertical + 1, pecaPosHorizontal, peca) == Colisao.NULA)
+                                        if (!EstaEmColisao(pecaPosVertical + 1, pecaPosHorizontal, peca))
                                         {
                                             pecaPosVertical++;
                                             cooldown = DEFAULT_COOLDOWN;
@@ -434,7 +434,7 @@ namespace atp_tp_tetris
                                         bool colidiu = false;
                                         for (int a = 0; !colidiu; a++)
                                         {
-                                            if (VerificarColisao(pecaPosVertical + a, pecaPosHorizontal, peca) != Colisao.NULA)
+                                            if (EstaEmColisao(pecaPosVertical + a, pecaPosHorizontal, peca))
                                             {
                                                 colidiu = true;
                                                 InserirPeca(pecaPosVertical + a - 1, pecaPosHorizontal, tabuleiro, peca);
@@ -472,11 +472,6 @@ namespace atp_tp_tetris
 
             MostrarTabuleiro(true);
             FimDeJogo();
-        }
-
-        private enum Colisao
-        {
-            NULA, HORIZONTAL, VERTICAL
         }
 
         private enum SentidoRotacao
