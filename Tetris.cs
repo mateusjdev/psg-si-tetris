@@ -35,6 +35,9 @@ namespace atp_tp_tetris
         int pecaPosHorizontal = -1;
         bool pecaEstaCaindo = false;
 
+        private int cooldown = -1;
+        private int sleepTime = 0;
+
         private bool needRender = true;
         private long lastRender = 0;
         private long nextRender = 0;
@@ -270,12 +273,13 @@ namespace atp_tp_tetris
             Console.WriteLine("Esc -> Pause");
         }
 
-        private static void Pause()
+        private void Pause()
         {
             // TODO: Criar menu
             // C -> Continuar()
             // R -> Reiniciar()
             // S/Q -> Sair()
+            needRender = true;
             Console.Write("\x1b[H\x1b[2J");
             Console.WriteLine("Jogo Pausado!");
             Console.WriteLine("Pressione enter para continuar!");
@@ -324,10 +328,31 @@ namespace atp_tp_tetris
                         needRender = true;
                     }
                     break;
+                case DirecaoMovimentacao.BAIXO:
+                    if (!EstaEmColisao(pecaPosVertical + 1, pecaPosHorizontal, peca))
+                    {
+                        pecaPosVertical++;
+                        cooldown = DEFAULT_COOLDOWN;
+                        needRender = true;
+                    }
+                    break;
+                case DirecaoMovimentacao.FUNDO:
+                    bool colidiu = false;
+                    for (int a = 0; !colidiu; a++)
+                    {
+                        if (EstaEmColisao(pecaPosVertical + a, pecaPosHorizontal, peca))
+                        {
+                            colidiu = true;
+                            InserirPeca(pecaPosVertical + a - 1, pecaPosHorizontal, tabuleiro, peca);
+                            pecaEstaCaindo = false;
+                        }
+                    }
+                    needRender = true;
+                    break;
             }
         }
 
-        public void Iniciar()
+        private void LerInformacoesJogador()
         {
             string nome = "";
             do
@@ -335,15 +360,20 @@ namespace atp_tp_tetris
                 Console.WriteLine("Informe o nome do jogador: ");
                 nome = Console.ReadLine();
             } while (nome.Length <= 0);
+            jogador = new Jogador(nome, 0);
+        }
 
+        public void Iniciar()
+        {
+            LerInformacoesJogador();
             ImprimirControles();
+
             Console.WriteLine("Pressione qualquer tecla para iniciar!");
             Console.ReadKey();
+            Console.Write("\x1b[H\x1b[2J");
 
             ZerarTabuleiro();
-            jogador = new Jogador(nome, 0);
-
-            jogando = true;
+            ReiniciarEstadoJogo();
             IniciarLogica();
         }
 
@@ -352,11 +382,47 @@ namespace atp_tp_tetris
             return (tamanhoTabuleiro - tamanhoPeca) / 2;
         }
 
+        private void ReiniciarEstadoJogo()
+        {
+            jogando = true;
+            cooldown = -1;
+            watch = Stopwatch.StartNew();
+            sleepTime = 0;
+        }
+
+        private void LerControlesDoUsuario()
+        {
+            if (Console.KeyAvailable)
+            {
+                switch (Console.ReadKey().Key)
+                {
+                    case ConsoleKey.LeftArrow:
+                        TentarRotacionarPeca(SentidoRotacao.ANTI_HORARIO_90);
+                        break;
+                    case ConsoleKey.RightArrow:
+                        TentarRotacionarPeca(SentidoRotacao.HORARIO_90);
+                        break;
+                    case ConsoleKey.A:
+                        TentarMoverPeca(DirecaoMovimentacao.ESQUERDA);
+                        break;
+                    case ConsoleKey.D:
+                        TentarMoverPeca(DirecaoMovimentacao.DIREITA);
+                        break;
+                    case ConsoleKey.DownArrow:
+                        TentarMoverPeca(DirecaoMovimentacao.BAIXO);
+                        break;
+                    case ConsoleKey.Spacebar:
+                        TentarMoverPeca(DirecaoMovimentacao.FUNDO);
+                        break;
+                    case ConsoleKey.Escape:
+                        Pause();
+                        break;
+                }
+            }
+        }
+
         private void IniciarLogica()
         {
-            int cooldown = -1;
-            watch = Stopwatch.StartNew();
-            int sleepTime = 0;
             while (jogando)
             {
                 VerificarAndRemoverLinhas();
@@ -396,54 +462,7 @@ namespace atp_tp_tetris
                         cooldown--;
                     }
 
-                    if (Console.KeyAvailable)
-                    {
-                        switch (Console.ReadKey().Key)
-                        {
-                            case ConsoleKey.LeftArrow:
-                                TentarRotacionarPeca(SentidoRotacao.ANTI_HORARIO_90);
-                                break;
-                            case ConsoleKey.RightArrow:
-                                TentarRotacionarPeca(SentidoRotacao.HORARIO_90);
-                                break;
-                            case ConsoleKey.A:
-                                TentarMoverPeca(DirecaoMovimentacao.ESQUERDA);
-                                break;
-                            case ConsoleKey.D:
-                                TentarMoverPeca(DirecaoMovimentacao.DIREITA);
-                                break;
-                            case ConsoleKey.DownArrow:
-                                // TODO: Reset frame
-                                // TentarMoverPeca(DirecaoMovimentacao.BAIXO);
-                                if (!EstaEmColisao(pecaPosVertical + 1, pecaPosHorizontal, peca))
-                                {
-                                    pecaPosVertical++;
-                                    cooldown = DEFAULT_COOLDOWN;
-                                    needRender = true;
-                                }
-                                break;
-                            case ConsoleKey.Spacebar:
-                                // TODO: Reset frame
-                                // TentarMoverPeca(DirecaoMovimentacao.FUNDO);
-                                bool colidiu = false;
-                                for (int a = 0; !colidiu; a++)
-                                {
-                                    if (EstaEmColisao(pecaPosVertical + a, pecaPosHorizontal, peca))
-                                    {
-                                        colidiu = true;
-                                        InserirPeca(pecaPosVertical + a - 1, pecaPosHorizontal, tabuleiro, peca);
-                                        pecaEstaCaindo = false;
-                                    }
-                                }
-                                needRender = true;
-                                break;
-                            case ConsoleKey.Escape:
-                                Pause();
-                                needRender = true;
-                                cooldown = DEFAULT_COOLDOWN;
-                                break;
-                        }
-                    }
+                    LerControlesDoUsuario();
 
                     // Render
                     CopiarTabuleiro(tabuleiro, display);
