@@ -80,7 +80,6 @@ namespace atp_tp_tetris
                             default:
                                 Console.Write("\u001b[0mX");
                                 break;
-
                         }
                     }
                     else
@@ -241,6 +240,59 @@ namespace atp_tp_tetris
             Console.WriteLine("Esc -> Pause");
         }
 
+
+
+        private static void Pause()
+        {
+            // TODO: Criar menu
+            // C -> Continuar()
+            // R -> Reiniciar()
+            // S/Q -> Sair()
+            Console.WriteLine("Jogo Pausado!");
+            Console.WriteLine("Pressione enter para continuar!");
+            Console.ReadLine();
+        }
+
+        private void TentarRotacionarPeca(SentidoRotacao sentido)
+        {
+            switch (sentido)
+            {
+                case SentidoRotacao.HORARIO_90:
+                    peca.Rotacionar90Horario();
+                    if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) != Colisao.NULA)
+                    {
+                        peca.Rotacionar90AntiHorario();
+                    }
+                    break;
+                case SentidoRotacao.ANTI_HORARIO_90:
+                    peca.Rotacionar90AntiHorario();
+                    if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) != Colisao.NULA)
+                    {
+                        peca.Rotacionar90Horario();
+                    }
+                    break;
+            }
+        }
+
+        private void TentarMoverPeca(DirecaoMovimentacao direcao)
+        {
+            switch (direcao)
+            {
+                case DirecaoMovimentacao.ESQUERDA:
+                    if (VerificarColisao(pecaPosVertical, pecaPosHorizontal - 1, peca) != Colisao.HORIZONTAL)
+                    {
+                        pecaPosHorizontal--;
+                    }
+                    break;
+                case DirecaoMovimentacao.DIREITA:
+                    if (VerificarColisao(pecaPosVertical, pecaPosHorizontal + 1, peca) != Colisao.HORIZONTAL)
+                    {
+                        pecaPosHorizontal++;
+                    }
+                    break;
+            }
+        }
+
         public void Iniciar()
         {
             string nome = "";
@@ -275,9 +327,10 @@ namespace atp_tp_tetris
                 pecaPosHorizontal = CalcularPosHorizontalInicial(tabuleiro.GetLength(1), peca.Peca.GetLength(0));
                 pecaEstaCaindo = true;
 
+                VerificarAndRemoverLinhas();
+
                 for (int i = 0; pecaEstaCaindo; i++)
                 {
-                    VerificarAndRemoverLinhas();
                     MostrarTabuleiro(true);
                     if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) == Colisao.VERTICAL)
                     {
@@ -306,36 +359,23 @@ namespace atp_tp_tetris
                             Thread.Sleep(FRAME_TIME);
                             if (Console.KeyAvailable)
                             {
-                                var key = Console.ReadKey();
-                                switch (key.Key)
+                                switch (Console.ReadKey().Key)
                                 {
                                     case ConsoleKey.LeftArrow:
-                                        peca.Rotacionar90AntiHorario();
-                                        if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) != Colisao.NULA)
-                                        {
-                                            peca.Rotacionar90Horario();
-                                        }
+                                        TentarRotacionarPeca(SentidoRotacao.ANTI_HORARIO_90);
                                         break;
                                     case ConsoleKey.RightArrow:
-                                        peca.Rotacionar90Horario();
-                                        if (VerificarColisao(pecaPosVertical, pecaPosHorizontal, peca) != Colisao.NULA)
-                                        {
-                                            peca.Rotacionar90AntiHorario();
-                                        }
+                                        TentarRotacionarPeca(SentidoRotacao.HORARIO_90);
                                         break;
                                     case ConsoleKey.A:
-                                        if (VerificarColisao(pecaPosVertical, pecaPosHorizontal - 1, peca) != Colisao.HORIZONTAL)
-                                        {
-                                            pecaPosHorizontal--;
-                                        }
+                                        TentarMoverPeca(DirecaoMovimentacao.ESQUERDA);
                                         break;
                                     case ConsoleKey.D:
-                                        if (VerificarColisao(pecaPosVertical, pecaPosHorizontal + 1, peca) != Colisao.HORIZONTAL)
-                                        {
-                                            pecaPosHorizontal++;
-                                        }
+                                        TentarMoverPeca(DirecaoMovimentacao.DIREITA);
                                         break;
                                     case ConsoleKey.DownArrow:
+                                        // TODO: Reset frame
+                                        // TentarMoverPeca(DirecaoMovimentacao.BAIXO);
                                         if (VerificarColisao(pecaPosVertical + 1, pecaPosHorizontal, peca) != Colisao.NULA)
                                         {
                                             pecaPosVertical++;
@@ -343,6 +383,8 @@ namespace atp_tp_tetris
                                         }
                                         break;
                                     case ConsoleKey.Spacebar:
+                                        // TODO: Reset frame
+                                        // TentarMoverPeca(DirecaoMovimentacao.FUNDO);
                                         bool colidiu = false;
                                         for (int a = 0; !colidiu; a++)
                                         {
@@ -356,9 +398,7 @@ namespace atp_tp_tetris
                                         }
                                         break;
                                     case ConsoleKey.Escape:
-                                        Console.WriteLine("Jogo Pausado!");
-                                        Console.WriteLine("Pressione enter para continuar!");
-                                        Console.ReadLine();
+                                        Pause();
                                         break;
                                 }
                                 CopiarTabuleiro(tabuleiro, display);
@@ -370,9 +410,20 @@ namespace atp_tp_tetris
                 }
             }
         }
+
         private enum Colisao
         {
             NULA, HORIZONTAL, VERTICAL
+        }
+
+        private enum SentidoRotacao
+        {
+            HORARIO_90, ANTI_HORARIO_90
+        }
+
+        private enum DirecaoMovimentacao
+        {
+            ESQUERDA, DIREITA, BAIXO, FUNDO
         }
     }
 }

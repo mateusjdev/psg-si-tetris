@@ -1,5 +1,4 @@
 ﻿using System;
-using static atp_tp_tetris.Tetrominos;
 
 namespace atp_tp_tetris
 {
