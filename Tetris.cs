@@ -110,32 +110,32 @@ namespace atp_tp_tetris
             needRender = false;
         }
 
-        private Colisao VerificarColisao(int pos_peca_lin, int pos_peca_col, Tetrominos peca)
+        private Colisao VerificarColisao(int posPecaLinha, int posPecaColuna, Tetrominos peca)
         {
-            int hitbox_top = peca.HitboxVerticalInicio();
-            int hitbox_bottom = peca.HitboxVerticalFim();
-            int hitbox_left = peca.HitboxHorizontalInicio();
-            int hitbox_right = peca.HitboxHorizontalFim();
+            int hitboxTop = peca.HitboxVerticalInicio();
+            int hitboxBottom = peca.HitboxVerticalFim();
+            int hitboxLeft = peca.HitboxHorizontalInicio();
+            int hitboxRight = peca.HitboxHorizontalFim();
 
-            if (pos_peca_lin < -1 || pos_peca_lin + hitbox_bottom >= LINES)
+            if (posPecaLinha < -1 || posPecaLinha + hitboxBottom >= LINES)
             {
                 return Colisao.VERTICAL;
             }
 
-            if (pos_peca_col + hitbox_left < 0 || pos_peca_col + hitbox_right >= COLUMNS)
+            if (posPecaColuna + hitboxLeft < 0 || posPecaColuna + hitboxRight >= COLUMNS)
             {
                 return Colisao.HORIZONTAL;
             }
 
-            pos_peca_col += hitbox_left;
-            for (int i = hitbox_left; i <= hitbox_right; i++, pos_peca_col++)
+            posPecaColuna += hitboxLeft;
+            for (int i = hitboxLeft; i <= hitboxRight; i++, posPecaColuna++)
             {
-                int k = pos_peca_lin;
-                for (int j = 0; j <= hitbox_bottom; j++, k++)
+                int k = posPecaLinha;
+                for (int j = 0; j <= hitboxBottom; j++, k++)
                 {
                     if (k >= 0)
                     {
-                        if (tabuleiro[k, pos_peca_col] > 0 && peca.Peca[j, i] > 0)
+                        if (tabuleiro[k, posPecaColuna] > 0 && peca.Peca[j, i] > 0)
                         {
                             return Colisao.VERTICAL;
                         }
@@ -193,19 +193,36 @@ namespace atp_tp_tetris
             }
         }
 
-        private void InserirPeca(int pos_peca_lin, int pos_peca_col, int[,] _tabuleiro, Tetrominos peca)
+        private void InserirPeca(int posPecaLinha, int posPecaColuna, int[,] _tabuleiro, Tetrominos peca)
         {
-            pos_peca_col += peca.HitboxHorizontalInicio();
-            for (int i = peca.HitboxHorizontalInicio(); i <= peca.HitboxHorizontalFim(); i++, pos_peca_col++)
+            if (posPecaLinha + peca.HitboxVerticalInicio() < -1 || posPecaLinha + peca.HitboxVerticalFim() >= _tabuleiro.GetLength(0))
+                throw new Exception("posPecaLinha out of bounds!");
+
+            if (posPecaColuna + peca.HitboxHorizontalInicio() < 0 || posPecaColuna + peca.HitboxHorizontalFim() >= _tabuleiro.GetLength(1))
+                throw new Exception("posPecaColuna out of bounds!");
+
+            int yPeca = 0;
+            int yEnd = posPecaLinha + peca.HitboxVerticalFim();
+            if (posPecaLinha < 0)
             {
-                int k = pos_peca_lin + peca.HitboxVerticalInicio();
-                for (int j = peca.HitboxVerticalInicio(); j <= peca.HitboxVerticalFim(); j++, k++)
+                yPeca = 0 - posPecaLinha;
+                posPecaLinha += yPeca;
+            }
+            int xPecaInicial = 0;
+            int xEnd = posPecaColuna + peca.HitboxHorizontalFim();
+            if (posPecaColuna < 0)
+            {
+                xPecaInicial = 0 - posPecaColuna;
+                posPecaColuna += xPecaInicial;
+            }            
+            int xPeca, xVetor;
+            for (int yVetor = posPecaLinha; yVetor <= yEnd; yVetor++, yPeca++)
+            {
+                xPeca = xPecaInicial;
+                for (xVetor = posPecaColuna; xVetor <= xEnd; xVetor++, xPeca++)
                 {
-                    if (k >= 0)
-                    {
-                        if (peca.Peca[j, i] > 0)
-                            _tabuleiro[k, pos_peca_col] = peca.Peca[j, i];
-                    }
+                    if (peca.Peca[yPeca, xPeca] > 0)
+                        _tabuleiro[yVetor, xVetor] = peca.Peca[yPeca, xPeca];
                 }
             }
         }
