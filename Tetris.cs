@@ -267,7 +267,7 @@ namespace atp_tp_tetris
 
             while (jogando)
             {
-                nova_peca = new Tetrominos(Tetrominos.EscolherFormatoAleatorio());
+                nova_peca = new Tetrominos();
                 posLinha = LINHA_INICIAL;
                 posColuna = (tabuleiro.GetLength(1) - nova_peca.Peca.GetLength(0)) / 2;
                 pecaCaindo = true;

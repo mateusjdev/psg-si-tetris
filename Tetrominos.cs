@@ -1,10 +1,12 @@
 ﻿using System;
+using static atp_tp_tetris.Tetrominos;
 
 namespace atp_tp_tetris
 {
     internal class Tetrominos
     {
         // Cores
+        // TODO: Mover pra enum ou struct
         public const int CYAN = 1;
         public const int BLUE = 2;
         public const int ORANGE = 3;
@@ -20,11 +22,21 @@ namespace atp_tp_tetris
             get { return peca; }
         }
 
-        public Tetrominos(char formato)
+        public Tetrominos(Formato formato)
+        {
+            InicializarMatriz(formato);
+        }
+
+        public Tetrominos()
+        {
+            InicializarMatriz(EscolherFormatoAleatorio());
+        }
+
+        private void InicializarMatriz(Formato formato)
         {
             switch (formato)
             {
-                case 'I':
+                case Formato.I:
                     peca = new int[,] {
                         { 0,0,0,0 },
                         { CYAN,CYAN,CYAN,CYAN},
@@ -32,51 +44,55 @@ namespace atp_tp_tetris
                         { 0,0,0,0 }
                     };
                     break;
-                case 'J':
+                case Formato.J:
                     peca = new int[,] {
                         { BLUE,0,0 },
                         { BLUE,BLUE,BLUE },
                         { 0,0,0 }
                     };
                     break;
-                case 'L':
+                case Formato.L:
                     peca = new int[,] {
                         { 0,0,ORANGE },
                         { ORANGE,ORANGE,ORANGE },
                         { 0,0,0 },
                     }; break;
-                case 'O':
+                case Formato.O:
                     peca = new int[,] {
                         { YELLOW,YELLOW },
                         { YELLOW,YELLOW }
                     }; break;
-                case 'S':
+                case Formato.S:
                     peca = new int[,] {
                         { 0,GREEN,GREEN },
                         { GREEN,GREEN,0 },
                         { 0,0,0 },
                     }; break;
-                case 'T':
+                case Formato.T:
                     peca = new int[,] {
                         { 0,PURPLE,0 },
                         { PURPLE,PURPLE,PURPLE },
                         { 0,0,0 }
                     }; break;
-                case 'Z':
+                case Formato.Z:
                     peca = new int[,] {
                         { RED,RED,0 },
                         { 0,RED,RED },
                         { 0,0,0 }
                     }; break;
-                default:
-                    peca = new int[,] { { 0 } };
-                    break;
             }
         }
 
-        public static char EscolherFormatoAleatorio()
+        public static Formato EscolherFormatoAleatorio()
         {
-            char[] pecas_disponiveis = { 'T', 'O', 'L', 'J', 'S', 'Z', 'I' };
+            Formato[] pecas_disponiveis = {
+                Formato.T,
+                Formato.O,
+                Formato.L,
+                Formato.J,
+                Formato.S,
+                Formato.Z,
+                Formato.I };
             int index_peca = new Random().Next(0, pecas_disponiveis.Length);
             return pecas_disponiveis[index_peca];
         }
@@ -179,6 +195,11 @@ namespace atp_tp_tetris
                 }
             }
             return 0;
+        }
+
+        public enum Formato
+        {
+            T, O, L, J, S, Z, I
         }
     }
 }
