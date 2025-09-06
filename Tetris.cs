@@ -355,7 +355,6 @@ namespace atp_tp_tetris
         private void IniciarLogica()
         {
             int cooldown = -1;
-
             watch = Stopwatch.StartNew();
             int sleepTime = 0;
             while (jogando)
@@ -370,28 +369,26 @@ namespace atp_tp_tetris
                     pecaEstaCaindo = true;
                     cooldown = DEFAULT_COOLDOWN + 1;
                     needRender = true;
-                }
 
-                if (EstaEmColisao(pecaPosVertical, pecaPosHorizontal, peca))
-                {
-                    if (pecaPosVertical == POS_VERTICAL_INICIAL)
+                    if (EstaEmColisao(pecaPosVertical, pecaPosHorizontal, peca))
                     {
                         jogando = false;
-                    }
-                    else
-                    {
-                        InserirPeca(pecaPosVertical - 1, pecaPosHorizontal, tabuleiro, peca);
-                        pecaEstaCaindo = false;
-                        // CONFIGURAR COMO TRUE DEPOIS
-                        needRender = false;
                     }
                 }
                 else
                 {
                     if (cooldown <= 0)
                     {
-                        pecaPosVertical++;
-                        cooldown = DEFAULT_COOLDOWN + 1;
+                        if (EstaEmColisao(pecaPosVertical + 1, pecaPosHorizontal, peca))
+                        {
+                            InserirPeca(pecaPosVertical, pecaPosHorizontal, tabuleiro, peca);
+                            pecaEstaCaindo = false;
+                        }
+                        else
+                        {
+                            pecaPosVertical++;
+                            cooldown = DEFAULT_COOLDOWN + 1;
+                        }
                         needRender = true;
                     }
                     else
