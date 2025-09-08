@@ -13,8 +13,7 @@ namespace atp_tp_tetris
             Tetris jogo = new Tetris();
             jogo.Iniciar();
 
-            Console.WriteLine("Pressione qualquer tecla para continuar!");
-            Console.ReadLine();
+            UI.AperteTeclaEnter("Programa finalizado! Pressione enter para sair!");
         }
     }
 }

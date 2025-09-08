@@ -62,6 +62,7 @@ namespace atp_tp_tetris
             }
         }
 
+        // TODO: Remover função
         private void ImprimirPeca(int value)
         {
             if (value > 0)
@@ -69,28 +70,28 @@ namespace atp_tp_tetris
                 switch (value)
                 {
                     case Tetrominos.CYAN:
-                        Console.Write("\u001b[46;36mX\u001b[0m");
+                        UI.WriteColorido("X", UI.Cores.CIANO, UI.Cores.CIANO);
                         break;
                     case Tetrominos.BLUE:
-                        Console.Write("\u001b[44;34mX\u001b[0m");
+                        UI.WriteColorido("X", UI.Cores.AZUL, UI.Cores.AZUL);
                         break;
                     case Tetrominos.ORANGE:
-                        Console.Write("\u001b[47;37mX\u001b[0m");
+                        UI.WriteColorido("X", UI.Cores.BRANCO, UI.Cores.BRANCO);
                         break;
                     case Tetrominos.YELLOW:
-                        Console.Write("\u001b[43;33mX\u001b[0m");
+                        UI.WriteColorido("X", UI.Cores.AMARELO, UI.Cores.AMARELO);
                         break;
                     case Tetrominos.GREEN:
-                        Console.Write("\u001b[42;32mX\u001b[0m");
+                        UI.WriteColorido("X", UI.Cores.VERDE, UI.Cores.VERDE);
                         break;
                     case Tetrominos.PURPLE:
-                        Console.Write("\u001b[45;35mX\u001b[0m");
+                        UI.WriteColorido("X", UI.Cores.ROXO, UI.Cores.ROXO);
                         break;
                     case Tetrominos.RED:
-                        Console.Write("\u001b[41;31mX\u001b[0m");
+                        UI.WriteColorido("X", UI.Cores.VERMELHO, UI.Cores.VERMELHO);
                         break;
                     default:
-                        Console.Write("\u001b[0mX");
+                        UI.WriteColorido("X", UI.Cores.PADRAO, UI.Cores.PADRAO);
                         break;
                 }
             }
@@ -104,7 +105,7 @@ namespace atp_tp_tetris
         {
             if (!needRender && !forceRender) return;
 
-            Console.Write("\u001b[H");
+            Console.Write(UI.EscapeKeys.MoveCursorToHome);
             for (int i = 0; i < display.GetLength(0); i++)
             {
                 Console.Write(DIV);
@@ -126,9 +127,10 @@ namespace atp_tp_tetris
         private void MostrarFilePeca(bool forceRender = false)
         {
             if (!needFileRender && !forceRender) return;
-            
-            int line = 1, column = 25;
-            Console.Write($"\u001b[{line};{column}H");
+
+            int line = 1;
+            const int column = 25;
+            UI.AlterarCoordenadasTela(line, column);
 
             int j = -1, l = -1, m = -1;
             for (int i = 0; i < filePecas.Size; i++)
@@ -148,10 +150,10 @@ namespace atp_tp_tetris
                         }
                     }
                     Console.Write(new string(' ', 10 - m));
-                    Console.Write($"\u001b[{++line};{column}H");
+                    UI.AlterarCoordenadasTela(++line, column);
                 }
                 Console.Write("          ");
-                Console.Write($"\u001b[{++line};{column}H");
+                UI.AlterarCoordenadasTela(++line, column);
             }
             needFileRender = false;
         }
@@ -289,17 +291,8 @@ namespace atp_tp_tetris
         private void FimDeJogo()
         {
             Console.WriteLine("Fim de jogo!");
-            string resposta = "";
-            do
-            {
-                Console.WriteLine("Deseja salvar a pontuação? (S/N)");
-                resposta = Console.ReadLine();
-                if (resposta != "S" && resposta != "N")
-                {
-                    Console.WriteLine("Resposta Inválida! Digite 'S' ou 'N'");
-                }
-            } while (resposta != "S" && resposta != "N");
-            if (resposta == "S")
+            int salvarPontuacao = UI.Selecao($"Pontuação: {jogador.Pontuacao}\nDeseja salvar a pontuação?", ["Sim", "Não"]);
+            if (salvarPontuacao == 0)
             {
                 jogador.SalvarPontuacao();
             }
@@ -323,10 +316,10 @@ namespace atp_tp_tetris
             // R -> Reiniciar()
             // S/Q -> Sair()
             needRender = true;
-            Console.Write("\x1b[H\x1b[2J");
+            UI.LimparTela();
             Console.WriteLine("Jogo Pausado!");
-            Console.WriteLine("Pressione enter para continuar!");
-            Console.ReadLine();
+            UI.AperteTeclaEnter();
+            UI.LimparTela();
         }
 
         private void TentarRotacionarPeca(SentidoRotacao sentido)
@@ -397,23 +390,18 @@ namespace atp_tp_tetris
 
         private void LerInformacoesJogador()
         {
-            string nome = "";
-            do
-            {
-                Console.WriteLine("Informe o nome do jogador: ");
-                nome = Console.ReadLine();
-            } while (nome.Length <= 0);
-            jogador = new Jogador(nome, 0);
+            string nomeJogador = UI.LerInformacao("Informe o nome do jogador:");
+            jogador = new Jogador(nomeJogador, 0);
         }
 
         public void Iniciar()
         {
+            UI.LimparTela();
             LerInformacoesJogador();
             ImprimirControles();
 
-            Console.WriteLine("Pressione qualquer tecla para iniciar!");
-            Console.ReadKey();
-            Console.Write("\x1b[H\x1b[2J");
+            UI.AperteTeclaQualquer();
+            UI.LimparTela();
 
             ZerarTabuleiro();
             ReiniciarEstadoJogo();
