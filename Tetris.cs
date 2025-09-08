@@ -30,7 +30,11 @@ namespace atp_tp_tetris
 
         private bool jogando = false;
 
-        Tetrominos peca = null;
+        private Tetrominos peca = null;
+
+        private const int TAMANHO_FILA_PECA = 5;
+        private TetrominosQueue filePecas = new TetrominosQueue(TAMANHO_FILA_PECA);
+
         int pecaPosVertical = -1;
         int pecaPosHorizontal = -1;
         bool pecaEstaCaindo = false;
@@ -39,6 +43,7 @@ namespace atp_tp_tetris
         private int sleepTime = 0;
 
         private bool needRender = true;
+        private bool needFileRender = true;
         private long lastRender = 0;
         private long nextRender = 0;
         private Stopwatch watch;
@@ -57,7 +62,45 @@ namespace atp_tp_tetris
             }
         }
 
-        public void MostrarTabuleiro(bool forceRender = false)
+        private void ImprimirPeca(int value)
+        {
+            if (value > 0)
+            {
+                switch (value)
+                {
+                    case Tetrominos.CYAN:
+                        Console.Write("\u001b[46;36mX\u001b[0m");
+                        break;
+                    case Tetrominos.BLUE:
+                        Console.Write("\u001b[44;34mX\u001b[0m");
+                        break;
+                    case Tetrominos.ORANGE:
+                        Console.Write("\u001b[47;37mX\u001b[0m");
+                        break;
+                    case Tetrominos.YELLOW:
+                        Console.Write("\u001b[43;33mX\u001b[0m");
+                        break;
+                    case Tetrominos.GREEN:
+                        Console.Write("\u001b[42;32mX\u001b[0m");
+                        break;
+                    case Tetrominos.PURPLE:
+                        Console.Write("\u001b[45;35mX\u001b[0m");
+                        break;
+                    case Tetrominos.RED:
+                        Console.Write("\u001b[41;31mX\u001b[0m");
+                        break;
+                    default:
+                        Console.Write("\u001b[0mX");
+                        break;
+                }
+            }
+            else
+            {
+                Console.Write(" ");
+            }
+        }
+
+        private void MostrarTabuleiro(bool forceRender = false)
         {
             if (!needRender && !forceRender) return;
 
@@ -67,40 +110,7 @@ namespace atp_tp_tetris
                 Console.Write(DIV);
                 for (int j = 0; j < display.GetLength(1); j++)
                 {
-                    if (display[i, j] > 0)
-                    {
-                        switch (display[i, j])
-                        {
-                            case Tetrominos.CYAN:
-                                Console.Write("\u001b[46;36mX\u001b[0m");
-                                break;
-                            case Tetrominos.BLUE:
-                                Console.Write("\u001b[44;34mX\u001b[0m");
-                                break;
-                            case Tetrominos.ORANGE:
-                                Console.Write("\u001b[47;37mX\u001b[0m");
-                                break;
-                            case Tetrominos.YELLOW:
-                                Console.Write("\u001b[43;33mX\u001b[0m");
-                                break;
-                            case Tetrominos.GREEN:
-                                Console.Write("\u001b[42;32mX\u001b[0m");
-                                break;
-                            case Tetrominos.PURPLE:
-                                Console.Write("\u001b[45;35mX\u001b[0m");
-                                break;
-                            case Tetrominos.RED:
-                                Console.Write("\u001b[41;31mX\u001b[0m");
-                                break;
-                            default:
-                                Console.Write("\u001b[0mX");
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        Console.Write(" ");
-                    }
+                    ImprimirPeca(display[i, j]);
 
                     if (j != display.GetLength(1))
                     {
@@ -111,6 +121,39 @@ namespace atp_tp_tetris
             }
             Console.WriteLine($"Pontuação: {jogador.Pontuacao}");
             needRender = false;
+        }
+
+        private void MostrarFilePeca(bool forceRender = false)
+        {
+            if (!needFileRender && !forceRender) return;
+            
+            int line = 1, column = 25;
+            Console.Write($"\u001b[{line};{column}H");
+
+            int j = -1, l = -1, m = -1;
+            for (int i = 0; i < filePecas.Size; i++)
+            {
+                Tetrominos tmp = filePecas.Get(i);
+                j = tmp.HitboxVerticalInicio();
+                l = tmp.HitboxHorizontalInicio();
+                for (int k = j; k <= tmp.HitboxVerticalFim(); k++)
+                {
+                    for (m = l; m <= tmp.HitboxHorizontalFim(); m++)
+                    {
+                        Console.Write(DIV);
+                        ImprimirPeca(tmp.Peca[k, m]);
+                        if (m == tmp.HitboxHorizontalFim())
+                        {
+                            Console.Write(DIV);
+                        }
+                    }
+                    Console.Write(new string(' ', 10 - m));
+                    Console.Write($"\u001b[{++line};{column}H");
+                }
+                Console.Write("          ");
+                Console.Write($"\u001b[{++line};{column}H");
+            }
+            needFileRender = false;
         }
 
         private bool EstaEmColisao(int posPecaLinha, int posPecaColuna, Tetrominos peca)
@@ -429,7 +472,9 @@ namespace atp_tp_tetris
 
                 if (!pecaEstaCaindo)
                 {
-                    peca = new Tetrominos();
+                    peca = filePecas.Pop();
+                    MostrarFilePeca(true);
+
                     pecaPosVertical = POS_VERTICAL_INICIAL;
                     pecaPosHorizontal = CalcularPosHorizontalInicial(tabuleiro.GetLength(1), peca.Peca.GetLength(0));
                     pecaEstaCaindo = true;

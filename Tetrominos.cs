@@ -201,4 +201,46 @@ namespace atp_tp_tetris
             T, O, L, J, S, Z, I
         }
     }
+
+    class TetrominosQueue
+    {
+        private Tetrominos[] filePeca;
+        private int size = -1;
+
+        public int Size
+        {
+            get { return size; }
+        }
+
+        public TetrominosQueue(int tamanho)
+        {
+            size = tamanho;
+            filePeca = new Tetrominos[tamanho];
+            for (int i = 0; i < tamanho; i++)
+            {
+                filePeca[i] = new Tetrominos();
+            }
+        }
+
+        public Tetrominos Pop()
+        {
+            Tetrominos poped = filePeca[0];
+            for (int i = 0; i < size - 1; i++)
+            {
+                filePeca[i] = filePeca[i + 1];
+            }
+            filePeca[size - 1] = new Tetrominos();
+            return poped;
+        }
+
+        public Tetrominos Get(int at)
+        {
+            if (at >= size)
+            {
+                return null;
+            }
+
+            return filePeca[at];
+        }
+    }
 }
