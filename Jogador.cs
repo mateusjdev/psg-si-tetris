@@ -6,39 +6,31 @@ namespace atp_tp_tetris
 {
     internal class Jogador
     {
-        private string nome;
-        private int pontuacao;
+        const int PONTUACAO_INICIAL = 0;
+        const string SALVAR_CAMINHO_PADRAO = "./scores.txt";
 
-        public string Nome
+        public string Nome { get; set; }
+        public int Pontuacao { get; set; }
+
+        public Jogador(string nome, int pontuacao = PONTUACAO_INICIAL)
         {
-            get { return nome; }
-            set { nome = value; }
+            Nome = nome;
+            Pontuacao = pontuacao;
         }
 
-        public int Pontuacao
-        {
-            get { return pontuacao; }
-            set { pontuacao = value; }
-        }
-
-        public Jogador(string nome, int pontuacao)
-        {
-            this.nome = nome;
-            this.pontuacao = pontuacao;
-        }
-
-        public void SalvarPontuacao(string caminhoArquivo = "scores.txt")
+        public void SalvarPontuacao(string caminhoArquivo = SALVAR_CAMINHO_PADRAO)
         {
             try
             {
                 StreamWriter sw = new StreamWriter(caminhoArquivo, true, Encoding.UTF8);
-                sw.WriteLine($"{nome};{pontuacao}");
+                sw.WriteLine($"{Nome};{Pontuacao}");
                 sw.Close();
                 Console.WriteLine("Pontuação salva!");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Erro ao salvar no arquivo: {ex.Message} ");
+                UI.AperteTeclaEnter();
             }
         }
     }

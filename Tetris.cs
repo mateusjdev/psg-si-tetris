@@ -391,7 +391,7 @@ namespace atp_tp_tetris
         private void LerInformacoesJogador()
         {
             string nomeJogador = UI.LerInformacao("Informe o nome do jogador:");
-            jogador = new Jogador(nomeJogador, 0);
+            jogador = new Jogador(nomeJogador);
         }
 
         public void Iniciar()
