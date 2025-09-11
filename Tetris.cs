@@ -6,34 +6,34 @@ namespace atp_tp_tetris
 {
     internal class Tetris
     {
-        private const double GAME_SPEED = 1;
+        private const double VelocidadeDoJogo = 1.0;
 
-        private const double MS = 1000;
+        private const double Milissegundos = 1000.0;
 
-        private const double FRAMES_PER_SECOND = 10;
-        private const double ENGINE_UPDATE_S = 1 / GAME_SPEED / FRAMES_PER_SECOND;
+        private const double QuadrosPorSegundo = 10.0;
+        private const double TempoAtualizacaoLogicaSegundos = 1 / VelocidadeDoJogo / QuadrosPorSegundo;
         // FRAME_TIME
-        private const long ENGINE_UPDATE_MS = (long)(ENGINE_UPDATE_S * MS);
+        private const long TempoAtualizacaoLogicaMillisegundos = (long)(TempoAtualizacaoLogicaSegundos * Milissegundos);
 
-        private const int LINES = 20;
-        private const int COLUMNS = 10;
+        private const int LINHAS = 20;
+        private const int COLUNAS = 10;
 
         // Posicao no vetor em que novas pecas se iniciam:
         // A Comparacao se inicia antes do inicio do vetor do tabuleiro
         private const int POS_VERTICAL_INICIAL = -1;
         private const char DIV = '|';
 
-        private int[,] tabuleiro = new int[LINES, COLUMNS];
-        private int[,] display = new int[LINES, COLUMNS];
+        private int[,] tabuleiro = new int[LINHAS, COLUNAS];
+        private int[,] display = new int[LINHAS, COLUNAS];
 
         private Jogador jogador;
 
-        private bool jogando = false;
+        public Status estadoLogica;
 
         private Tetrominos peca = null;
 
         private const int TAMANHO_FILA_PECA = 5;
-        private TetrominosQueue filePecas = new TetrominosQueue(TAMANHO_FILA_PECA);
+        private TetrominosQueue filePecas;
 
         int pecaPosVertical = -1;
         int pecaPosHorizontal = -1;
@@ -42,14 +42,14 @@ namespace atp_tp_tetris
         private int cooldown = -1;
         private int sleepTime = 0;
 
-        private bool needRender = true;
-        private bool needFileRender = true;
+        private bool necessitaRenderTabuleiro = true;
+        private bool necessitaRenderFilaDePeca = true;
         private long lastRender = 0;
         private long nextRender = 0;
         private Stopwatch watch;
         private long renderDelta = 0;
 
-        private int DEFAULT_COOLDOWN = (int)Math.Round(1.0 / ENGINE_UPDATE_S, MidpointRounding.ToPositiveInfinity);
+        private int DEFAULT_COOLDOWN = (int)Math.Round(1.0 / TempoAtualizacaoLogicaSegundos, MidpointRounding.ToPositiveInfinity);
 
         private void ZerarTabuleiro()
         {
@@ -101,32 +101,27 @@ namespace atp_tp_tetris
             }
         }
 
-        private void MostrarTabuleiro(bool forceRender = false)
+        private void RenderizarTabuleiro(bool forceRender = false)
         {
-            if (!needRender && !forceRender) return;
+            if (!necessitaRenderTabuleiro && !forceRender) return;
 
             Console.Write(UI.EscapeKeys.MoveCursorToHome);
             for (int i = 0; i < display.GetLength(0); i++)
             {
-                Console.Write(DIV);
                 for (int j = 0; j < display.GetLength(1); j++)
                 {
+                    Console.Write(DIV);
                     ImprimirPeca(display[i, j]);
-
-                    if (j != display.GetLength(1))
-                    {
-                        Console.Write(DIV);
-                    }
                 }
-                Console.WriteLine();
+                Console.WriteLine(DIV);
             }
             Console.WriteLine($"Pontuação: {jogador.Pontuacao}");
-            needRender = false;
+            necessitaRenderTabuleiro = false;
         }
 
-        private void MostrarFilePeca(bool forceRender = false)
+        private void RenderizarFilaDePeca(bool forceRender = false)
         {
-            if (!needFileRender && !forceRender) return;
+            if (!necessitaRenderFilaDePeca && !forceRender) return;
 
             int line = 1;
             const int column = 25;
@@ -144,18 +139,16 @@ namespace atp_tp_tetris
                     {
                         Console.Write(DIV);
                         ImprimirPeca(tmp.Peca[k, m]);
-                        if (m == tmp.HitboxHorizontalFim())
-                        {
-                            Console.Write(DIV);
-                        }
                     }
+                    Console.Write(DIV);
+                    // TODO: Clean screen from (x, 25) to (0, end)
                     Console.Write(new string(' ', 10 - m));
                     UI.AlterarCoordenadasTela(++line, column);
                 }
                 Console.Write("          ");
                 UI.AlterarCoordenadasTela(++line, column);
             }
-            needFileRender = false;
+            necessitaRenderFilaDePeca = false;
         }
 
         private bool EstaEmColisao(int posPecaLinha, int posPecaColuna, Tetrominos peca)
@@ -165,12 +158,12 @@ namespace atp_tp_tetris
             int hitboxLeft = peca.HitboxHorizontalInicio();
             int hitboxRight = peca.HitboxHorizontalFim();
 
-            if (posPecaLinha < -1 || posPecaLinha + hitboxBottom >= LINES)
+            if (posPecaLinha < -1 || posPecaLinha + hitboxBottom >= LINHAS)
             {
                 return true;
             }
 
-            if (posPecaColuna + hitboxLeft < 0 || posPecaColuna + hitboxRight >= COLUMNS)
+            if (posPecaColuna + hitboxLeft < 0 || posPecaColuna + hitboxRight >= COLUNAS)
             {
                 return true;
             }
@@ -196,7 +189,7 @@ namespace atp_tp_tetris
 
         private void RemoverLinha(int linha)
         {
-            needRender = true;
+            necessitaRenderTabuleiro = true;
             if (linha < 0 || linha > tabuleiro.GetLength(0) - 1) return;
             for (int j = linha; j > 0; j--)
             {
@@ -243,6 +236,8 @@ namespace atp_tp_tetris
 
         private void InserirPeca(int posPecaLinha, int posPecaColuna, int[,] _tabuleiro, Tetrominos peca)
         {
+            if (peca == null) return;
+
             if (posPecaLinha + peca.HitboxVerticalInicio() < -1 || posPecaLinha + peca.HitboxVerticalFim() >= _tabuleiro.GetLength(0))
                 throw new Exception("posPecaLinha out of bounds!");
 
@@ -300,6 +295,7 @@ namespace atp_tp_tetris
 
         private void ImprimirControles()
         {
+            UI.LimparTela();
             Console.WriteLine("Controles:");
             Console.WriteLine("Seta para Esquerda -> Virar peça no sentido Anti-Horário");
             Console.WriteLine("Seta para Direita -> Virar peça no sentido Horário");
@@ -307,18 +303,30 @@ namespace atp_tp_tetris
             Console.WriteLine("Letra D -> Mover peça para direita");
             Console.WriteLine("Espaço -> Colocar peça na posição final (Cair até o final)");
             Console.WriteLine("Esc -> Pause");
+            UI.AperteTeclaQualquer();
         }
 
         private void Pause()
         {
-            // TODO: Criar menu
-            // C -> Continuar()
-            // R -> Reiniciar()
-            // S/Q -> Sair()
-            needRender = true;
             UI.LimparTela();
-            Console.WriteLine("Jogo Pausado!");
-            UI.AperteTeclaEnter();
+            necessitaRenderTabuleiro = true;
+            necessitaRenderFilaDePeca = true;
+
+            string pergunta = "Jogo Pausado!";
+            string[] opcoes = ["Continuar", "Reiniciar", "Sair"];
+            int resposta = UI.Selecao(pergunta, opcoes);
+            switch (resposta)
+            {
+                // case 0: ignore
+                case 1:
+                    ReiniciarEstadoJogo();
+                    ImprimirControles();
+                    break;
+                case 2:
+                    estadoLogica = Status.Interrompido;
+                    UI.LimparTela();
+                    break;
+            }
             UI.LimparTela();
         }
 
@@ -343,7 +351,7 @@ namespace atp_tp_tetris
                     }
                     break;
             }
-            needRender = true;
+            necessitaRenderTabuleiro = true;
         }
 
         private void TentarMoverPeca(DirecaoMovimentacao direcao)
@@ -354,14 +362,14 @@ namespace atp_tp_tetris
                     if (!EstaEmColisao(pecaPosVertical, pecaPosHorizontal - 1, peca))
                     {
                         pecaPosHorizontal--;
-                        needRender = true;
+                        necessitaRenderTabuleiro = true;
                     }
                     break;
                 case DirecaoMovimentacao.DIREITA:
                     if (!EstaEmColisao(pecaPosVertical, pecaPosHorizontal + 1, peca))
                     {
                         pecaPosHorizontal++;
-                        needRender = true;
+                        necessitaRenderTabuleiro = true;
                     }
                     break;
                 case DirecaoMovimentacao.BAIXO:
@@ -369,7 +377,7 @@ namespace atp_tp_tetris
                     {
                         pecaPosVertical++;
                         cooldown = DEFAULT_COOLDOWN;
-                        needRender = true;
+                        necessitaRenderTabuleiro = true;
                     }
                     break;
                 case DirecaoMovimentacao.FUNDO:
@@ -383,28 +391,22 @@ namespace atp_tp_tetris
                             pecaEstaCaindo = false;
                         }
                     }
-                    needRender = true;
+                    necessitaRenderTabuleiro = true;
                     break;
             }
         }
 
         private void LerInformacoesJogador()
         {
+            UI.LimparTela();
             string nomeJogador = UI.LerInformacao("Informe o nome do jogador:");
             jogador = new Jogador(nomeJogador);
         }
 
         public void Iniciar()
         {
-            UI.LimparTela();
-            LerInformacoesJogador();
-            ImprimirControles();
-
-            UI.AperteTeclaQualquer();
-            UI.LimparTela();
-
-            ZerarTabuleiro();
             ReiniciarEstadoJogo();
+            ImprimirControles();
             IniciarLogica();
         }
 
@@ -415,10 +417,32 @@ namespace atp_tp_tetris
 
         private void ReiniciarEstadoJogo()
         {
-            jogando = true;
+            UI.LimparTela();
+            ZerarTabuleiro();
+            LerInformacoesJogador();
+
+            estadoLogica = Status.Executando;
             cooldown = -1;
             watch = Stopwatch.StartNew();
+            nextRender = 0;
+            lastRender = 0;
             sleepTime = 0;
+            peca = null;
+            filePecas = new TetrominosQueue(TAMANHO_FILA_PECA);
+            pecaPosHorizontal = -1;
+            pecaPosVertical = -1;
+            pecaEstaCaindo = false;
+
+            necessitaRenderTabuleiro = true;
+            necessitaRenderFilaDePeca = true;
+
+            // RoubarQuadro() -> LimparTela + necessitaRender(2x)
+
+            // SolicitarRender(Tela.Tabuleiro);
+            // SolicitarRender(Tela.FilaDePeca);
+            // SolicitarRender(Tela.PecaGuardada);
+            // SolicitarRenderTabuleiro();
+            // SolicitarRenderFileDePeca(); 
         }
 
         private void LerControlesDoUsuario()
@@ -454,24 +478,25 @@ namespace atp_tp_tetris
 
         private void IniciarLogica()
         {
-            while (jogando)
+            UI.LimparTela();
+            while (estadoLogica == Status.Executando)
             {
                 VerificarAndRemoverLinhas();
 
                 if (!pecaEstaCaindo)
                 {
                     peca = filePecas.Pop();
-                    MostrarFilePeca(true);
+                    RenderizarFilaDePeca(true);
 
                     pecaPosVertical = POS_VERTICAL_INICIAL;
                     pecaPosHorizontal = CalcularPosHorizontalInicial(tabuleiro.GetLength(1), peca.Peca.GetLength(0));
                     pecaEstaCaindo = true;
                     cooldown = DEFAULT_COOLDOWN + 1;
-                    needRender = true;
+                    necessitaRenderTabuleiro = true;
 
                     if (EstaEmColisao(pecaPosVertical, pecaPosHorizontal, peca))
                     {
-                        jogando = false;
+                        estadoLogica = Status.Finalizada;
                     }
                 }
                 else
@@ -488,7 +513,7 @@ namespace atp_tp_tetris
                             pecaPosVertical++;
                             cooldown = DEFAULT_COOLDOWN + 1;
                         }
-                        needRender = true;
+                        necessitaRenderTabuleiro = true;
                     }
                     else
                     {
@@ -501,11 +526,12 @@ namespace atp_tp_tetris
                     CopiarTabuleiro(tabuleiro, display);
                     InserirPeca(pecaPosVertical, pecaPosHorizontal, display, peca);
 
-                    MostrarTabuleiro();
+                    RenderizarTabuleiro();
+                    RenderizarFilaDePeca();
                     lastRender = watch.ElapsedMilliseconds;
 
                     sleepTime = (int)(nextRender - lastRender);
-                    nextRender = lastRender + ENGINE_UPDATE_MS;
+                    nextRender = lastRender + TempoAtualizacaoLogicaMillisegundos;
 
                     if (sleepTime > 0)
                         Thread.Sleep(sleepTime);
@@ -514,8 +540,11 @@ namespace atp_tp_tetris
                 }
             }
 
-            MostrarTabuleiro(true);
-            FimDeJogo();
+            if (estadoLogica == Status.Finalizada)
+            {
+                RenderizarTabuleiro(true);
+                FimDeJogo();
+            }
         }
 
         private enum SentidoRotacao
@@ -527,5 +556,13 @@ namespace atp_tp_tetris
         {
             ESQUERDA, DIREITA, BAIXO, FUNDO
         }
+    }
+
+    public enum Status
+    {
+        Pendente,
+        Executando,
+        Finalizada,
+        Interrompido
     }
 }
