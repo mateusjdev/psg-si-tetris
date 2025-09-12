@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text;
 using System.Threading;
 
 namespace atp_tp_tetris
@@ -62,60 +63,64 @@ namespace atp_tp_tetris
             }
         }
 
-        // TODO: Remover função
-        private void ImprimirPeca(int value)
+        private string ColorirPeca(int value)
         {
+            string texto;
             if (value > 0)
             {
                 switch (value)
                 {
                     case Tetrominos.CYAN:
-                        UI.WriteColorido("X", UI.Cores.CIANO, UI.Cores.CIANO);
+                        texto = UI.TextColorido("X", UI.Cores.CIANO, UI.Cores.CIANO);
                         break;
                     case Tetrominos.BLUE:
-                        UI.WriteColorido("X", UI.Cores.AZUL, UI.Cores.AZUL);
+                        texto = UI.TextColorido("X", UI.Cores.AZUL, UI.Cores.AZUL);
                         break;
                     case Tetrominos.ORANGE:
-                        UI.WriteColorido("X", UI.Cores.BRANCO, UI.Cores.BRANCO);
+                        texto = UI.TextColorido("X", UI.Cores.BRANCO, UI.Cores.BRANCO);
                         break;
                     case Tetrominos.YELLOW:
-                        UI.WriteColorido("X", UI.Cores.AMARELO, UI.Cores.AMARELO);
+                        texto = UI.TextColorido("X", UI.Cores.AMARELO, UI.Cores.AMARELO);
                         break;
                     case Tetrominos.GREEN:
-                        UI.WriteColorido("X", UI.Cores.VERDE, UI.Cores.VERDE);
+                        texto = UI.TextColorido("X", UI.Cores.VERDE, UI.Cores.VERDE);
                         break;
                     case Tetrominos.PURPLE:
-                        UI.WriteColorido("X", UI.Cores.ROXO, UI.Cores.ROXO);
+                        texto = UI.TextColorido("X", UI.Cores.ROXO, UI.Cores.ROXO);
                         break;
                     case Tetrominos.RED:
-                        UI.WriteColorido("X", UI.Cores.VERMELHO, UI.Cores.VERMELHO);
+                        texto = UI.TextColorido("X", UI.Cores.VERMELHO, UI.Cores.VERMELHO);
                         break;
                     default:
-                        UI.WriteColorido("X", UI.Cores.PADRAO, UI.Cores.PADRAO);
+                        texto = UI.TextColorido("X", UI.Cores.PADRAO, UI.Cores.PADRAO);
                         break;
                 }
             }
             else
             {
-                Console.Write(" ");
+                texto = UI.TextColorido(" ", UI.Cores.PADRAO, UI.Cores.PADRAO);
             }
-        }
+            return texto;
+        }            
 
         private void RenderizarTabuleiro(bool forceRender = false)
         {
             if (!necessitaRenderTabuleiro && !forceRender) return;
 
             Console.Write(UI.EscapeKeys.MoveCursorToHome);
+            var str = new StringBuilder();
             for (int i = 0; i < display.GetLength(0); i++)
             {
                 for (int j = 0; j < display.GetLength(1); j++)
                 {
-                    Console.Write(DIV);
-                    ImprimirPeca(display[i, j]);
+                    str.Append(DIV);
+                    str.Append(ColorirPeca(display[i, j]));
                 }
-                Console.WriteLine(DIV);
+                str.Append(DIV);
+                str.Append('\n');
             }
-            Console.WriteLine($"Pontuação: {jogador.Pontuacao}");
+            str.AppendLine($"Pontuação: {jogador.Pontuacao}");
+            Console.WriteLine(str.ToString());
             necessitaRenderTabuleiro = false;
         }
 
@@ -126,7 +131,7 @@ namespace atp_tp_tetris
             int line = 1;
             const int column = 25;
             UI.AlterarCoordenadasTela(line, column);
-
+            StringBuilder str;
             int j = -1, l = -1, m = -1;
             for (int i = 0; i < filePecas.Size; i++)
             {
@@ -135,14 +140,16 @@ namespace atp_tp_tetris
                 l = tmp.HitboxHorizontalInicio();
                 for (int k = j; k <= tmp.HitboxVerticalFim(); k++)
                 {
+                    str =  new StringBuilder();
                     for (m = l; m <= tmp.HitboxHorizontalFim(); m++)
                     {
-                        Console.Write(DIV);
-                        ImprimirPeca(tmp.Peca[k, m]);
+                        str.Append(DIV);
+                        str.Append(ColorirPeca(tmp.Peca[k, m]));
                     }
-                    Console.Write(DIV);
+                    str.Append(DIV);
+                    str.Append(' ', 9 - m);
                     // TODO: Clean screen from (x, 25) to (0, end)
-                    Console.Write(new string(' ', 10 - m));
+                    Console.WriteLine(str.ToString());
                     UI.AlterarCoordenadasTela(++line, column);
                 }
                 Console.Write("          ");
@@ -296,13 +303,15 @@ namespace atp_tp_tetris
         private void ImprimirControles()
         {
             UI.LimparTela();
-            Console.WriteLine("Controles:");
-            Console.WriteLine("Seta para Esquerda -> Virar peça no sentido Anti-Horário");
-            Console.WriteLine("Seta para Direita -> Virar peça no sentido Horário");
-            Console.WriteLine("Letra A -> Mover peça para esquerda");
-            Console.WriteLine("Letra D -> Mover peça para direita");
-            Console.WriteLine("Espaço -> Colocar peça na posição final (Cair até o final)");
-            Console.WriteLine("Esc -> Pause");
+            var str = new StringBuilder();
+            str.AppendLine("Controles:");
+            str.AppendLine("Seta para Esquerda -> Virar peça no sentido Anti-Horário");
+            str.AppendLine("Seta para Direita -> Virar peça no sentido Horário");
+            str.AppendLine("Letra A -> Mover peça para esquerda");
+            str.AppendLine("Letra D -> Mover peça para direita");
+            str.AppendLine("Espaço -> Colocar peça na posição final (Cair até o final)");
+            str.AppendLine("Esc -> Pause");
+            Console.WriteLine(str.ToString());
             UI.AperteTeclaQualquer();
         }
 

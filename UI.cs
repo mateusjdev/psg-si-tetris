@@ -1,5 +1,5 @@
 using System;
-using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 namespace atp_tp_tetris
 {
@@ -22,6 +22,7 @@ namespace atp_tp_tetris
 
         public class EscapeKeys
         {
+            public const string EspaceCode = "\x1b";
             public const string ResetAttributes = "\x1b[0m";
             public const string MoveCursorToHome = "\x1b[H";
             public const string EraseEntireScreen = "\x1b[2J";
@@ -34,71 +35,88 @@ namespace atp_tp_tetris
             {
                 return $"\x1b[{line};{column}H";
             }
+            public static string ForegroundColor(Cores cor)
+            {
+                string texto;
+                switch (cor)
+                {
+                    case Cores.PRETO:
+                        texto = $"{EspaceCode}[30m";
+                        break;
+                    case Cores.VERMELHO:
+                        texto = $"{EspaceCode}[31m";
+                        break;
+                    case Cores.VERDE:
+                        texto = $"{EspaceCode}[32m";
+                        break;
+                    case Cores.AMARELO:
+                        texto = $"{EspaceCode}[33m";
+                        break;
+                    case Cores.AZUL:
+                        texto = $"{EspaceCode}[34m";
+                        break;
+                    case Cores.ROXO:
+                        texto = $"{EspaceCode}[35m";
+                        break;
+                    case Cores.CIANO:
+                        texto = $"{EspaceCode}[36m";
+                        break;
+                    case Cores.BRANCO:
+                        texto = $"{EspaceCode}[37m";
+                        break;
+                    case Cores.PADRAO:
+                        texto = $"{EspaceCode}[39m";
+                        break;
+                    default:
+                        texto = "";
+                        break;
+                }
+                return texto;
+            }
+            public static string BackgroundColor(Cores cor)
+            {
+                string texto;
+                switch (cor)
+                {
+                    case Cores.PRETO:
+                        texto = $"{EspaceCode}[40m";
+                        break;
+                    case Cores.VERMELHO:
+                        texto = $"{EspaceCode}[41m";
+                        break;
+                    case Cores.VERDE:
+                        texto = $"{EspaceCode}[42m";
+                        break;
+                    case Cores.AMARELO:
+                        texto = $"{EspaceCode}[43m";
+                        break;
+                    case Cores.AZUL:
+                        texto = $"{EspaceCode}[44m";
+                        break;
+                    case Cores.ROXO:
+                        texto = $"{EspaceCode}[45m";
+                        break;
+                    case Cores.CIANO:
+                        texto = $"{EspaceCode}[46m";
+                        break;
+                    case Cores.BRANCO:
+                        texto = $"{EspaceCode}[47m";
+                        break;
+                    case Cores.PADRAO:
+                        texto = $"{EspaceCode}[49m";
+                        break;
+                    default:
+                        texto = "";
+                        break;
+                }
+                return texto;
+            }
         }
 
         public static void AlterarCorTexto(Cores texto = Cores.IGNORAR, Cores fundo = Cores.IGNORAR)
         {
             if (texto == Cores.IGNORAR && fundo == Cores.IGNORAR) return;
-            switch (texto)
-            {
-                case Cores.PRETO:
-                    Console.Write("\x1b[30m");
-                    break;
-                case Cores.VERMELHO:
-                    Console.Write("\x1b[31m");
-                    break;
-                case Cores.VERDE:
-                    Console.Write("\x1b[32m");
-                    break;
-                case Cores.AMARELO:
-                    Console.Write("\x1b[33m");
-                    break;
-                case Cores.AZUL:
-                    Console.Write("\x1b[34m");
-                    break;
-                case Cores.ROXO:
-                    Console.Write("\x1b[35m");
-                    break;
-                case Cores.CIANO:
-                    Console.Write("\x1b[36m");
-                    break;
-                case Cores.BRANCO:
-                    Console.Write("\x1b[37m");
-                    break;
-                case Cores.PADRAO:
-                    Console.Write("\x1b[39m");
-                    break;
-            }
-            switch (fundo)
-            {
-                case Cores.PRETO:
-                    Console.Write("\x1b[40m");
-                    break;
-                case Cores.VERMELHO:
-                    Console.Write("\x1b[41m");
-                    break;
-                case Cores.VERDE:
-                    Console.Write("\x1b[42m");
-                    break;
-                case Cores.AMARELO:
-                    Console.Write("\x1b[43m");
-                    break;
-                case Cores.AZUL:
-                    Console.Write("\x1b[44m");
-                    break;
-                case Cores.ROXO:
-                    Console.Write("\x1b[45m");
-                    break;
-                case Cores.CIANO:
-                    Console.Write("\x1b[46m");
-                    break;
-                case Cores.BRANCO:
-                    Console.Write("\x1b[47m");
-                    break;
-                case Cores.PADRAO:
-                    Console.Write("\x1b[49m");
-                    break;
-            }
+            Console.WriteLine(EscapeKeys.ForegroundColor(texto) + EscapeKeys.BackgroundColor(fundo));
         }
 
         public static void ResetarCorTexto()
@@ -106,19 +124,28 @@ namespace atp_tp_tetris
             Console.Write(EscapeKeys.ResetAttributes);
         }
 
+        public static string TextColorido(string texto, Cores corTexto = Cores.IGNORAR, Cores corFundo = Cores.IGNORAR)
+        {
+            var str = new StringBuilder();
+            str.Append(EscapeKeys.ForegroundColor(corTexto));
+            str.Append(EscapeKeys.BackgroundColor(corFundo));
+            for (int i = 0; i < texto.Length; i++)
+            {
+                str.Append(texto[i]);
+            }
+            str.Append(EscapeKeys.ForegroundColor(Cores.PADRAO));
+            str.Append(EscapeKeys.BackgroundColor(Cores.PADRAO));
+            return str.ToString();
+        }
+
         public static void WriteColorido(string texto, Cores corTexto = Cores.IGNORAR, Cores corFundo = Cores.IGNORAR)
         {
-            AlterarCorTexto(corTexto, corFundo);
-            Console.Write(texto);
-            ResetarCorTexto();
+            Console.Write(TextColorido(texto, corTexto, corFundo));
         }
 
         public static void WriteLineColorido(string texto, Cores corTexto = Cores.IGNORAR, Cores corFundo = Cores.IGNORAR)
         {
-            AlterarCorTexto(corTexto, corFundo);
-            Console.Write(texto);
-            ResetarCorTexto();
-            Console.WriteLine();
+            Console.WriteLine(TextColorido(texto, corTexto, corFundo));
         }
 
         public static void LimparTela()
