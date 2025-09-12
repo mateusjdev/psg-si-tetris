@@ -442,7 +442,7 @@ namespace atp_tp_tetris
             // SolicitarRender(Tela.FilaDePeca);
             // SolicitarRender(Tela.PecaGuardada);
             // SolicitarRenderTabuleiro();
-            // SolicitarRenderFileDePeca(); 
+            // SolicitarRenderFileDePeca();
         }
 
         private void LerControlesDoUsuario()
@@ -474,6 +474,19 @@ namespace atp_tp_tetris
                         break;
                 }
             }
+        }
+
+        private void AguardarProximoQuadro()
+        {
+            lastRender = watch.ElapsedMilliseconds;
+
+            sleepTime = (int)(nextRender - lastRender);
+            nextRender = lastRender + TempoAtualizacaoLogicaMillisegundos;
+
+            if (sleepTime > 0)
+                Thread.Sleep(sleepTime);
+            else
+                renderDelta = sleepTime;
         }
 
         private void IniciarLogica()
@@ -528,15 +541,7 @@ namespace atp_tp_tetris
 
                     RenderizarTabuleiro();
                     RenderizarFilaDePeca();
-                    lastRender = watch.ElapsedMilliseconds;
-
-                    sleepTime = (int)(nextRender - lastRender);
-                    nextRender = lastRender + TempoAtualizacaoLogicaMillisegundos;
-
-                    if (sleepTime > 0)
-                        Thread.Sleep(sleepTime);
-                    else
-                        renderDelta = sleepTime;
+                    AguardarProximoQuadro();
                 }
             }
 
