@@ -424,6 +424,14 @@ namespace atp_tp_tetris
             return (tamanhoTabuleiro - tamanhoPeca) / 2;
         }
 
+        private void GuardarPeca()
+        {
+            if (!pecaEstaCaindo || )
+            {
+                return;
+            }
+        }
+
         private void ReiniciarEstadoJogo()
         {
             UI.LimparTela();
@@ -471,6 +479,9 @@ namespace atp_tp_tetris
                         break;
                     case ConsoleKey.D:
                         TentarMoverPeca(DirecaoMovimentacao.DIREITA);
+                        break;
+                    case ConsoleKey.C:
+                        GuardarPeca();
                         break;
                     case ConsoleKey.DownArrow:
                         TentarMoverPeca(DirecaoMovimentacao.BAIXO);
