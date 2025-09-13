@@ -11,7 +11,7 @@ namespace atp_tp_tetris
 
         private const double Milissegundos = 1000.0;
 
-        private const double QuadrosPorSegundo = 10.0;
+        private const double QuadrosPorSegundo = 30.0;
         private const double TempoAtualizacaoLogicaSegundos = 1 / VelocidadeDoJogo / QuadrosPorSegundo;
         // FRAME_TIME
         private const long TempoAtualizacaoLogicaMillisegundos = (long)(TempoAtualizacaoLogicaSegundos * Milissegundos);
@@ -41,14 +41,14 @@ namespace atp_tp_tetris
         bool pecaEstaCaindo = false;
 
         private int cooldown = -1;
-        private int sleepTime = 0;
 
         private bool necessitaRenderTabuleiro = true;
         private bool necessitaRenderFilaDePeca = true;
-        private long lastRender = 0;
-        private long nextRender = 0;
         private Stopwatch watch;
-        private long renderDelta = 0;
+
+        long timeToRender = 0;
+        long deltaRender = 0;
+        long timeSleepRender = 0;
 
         private int DEFAULT_COOLDOWN = (int)Math.Round(1.0 / TempoAtualizacaoLogicaSegundos, MidpointRounding.ToPositiveInfinity);
 
@@ -101,7 +101,7 @@ namespace atp_tp_tetris
                 texto = UI.TextColorido(" ", UI.Cores.PADRAO, UI.Cores.PADRAO);
             }
             return texto;
-        }            
+        }
 
         private void RenderizarTabuleiro(bool forceRender = false)
         {
@@ -140,7 +140,7 @@ namespace atp_tp_tetris
                 l = tmp.HitboxHorizontalInicio();
                 for (int k = j; k <= tmp.HitboxVerticalFim(); k++)
                 {
-                    str =  new StringBuilder();
+                    str = new StringBuilder();
                     for (m = l; m <= tmp.HitboxHorizontalFim(); m++)
                     {
                         str.Append(DIV);
@@ -433,9 +433,9 @@ namespace atp_tp_tetris
             estadoLogica = Status.Executando;
             cooldown = -1;
             watch = Stopwatch.StartNew();
-            nextRender = 0;
-            lastRender = 0;
-            sleepTime = 0;
+            // nextRender = 0;
+            // lastRender = 0;
+            // sleepTime = 0;
             peca = null;
             filePecas = new TetrominosQueue(TAMANHO_FILA_PECA);
             pecaPosHorizontal = -1;
@@ -487,15 +487,18 @@ namespace atp_tp_tetris
 
         private void AguardarProximoQuadro()
         {
-            lastRender = watch.ElapsedMilliseconds;
+            timeToRender = watch.ElapsedMilliseconds;
+            timeSleepRender = TempoAtualizacaoLogicaMillisegundos - timeToRender + deltaRender;
 
-            sleepTime = (int)(nextRender - lastRender);
-            nextRender = lastRender + TempoAtualizacaoLogicaMillisegundos;
-
-            if (sleepTime > 0)
-                Thread.Sleep(sleepTime);
+            if (timeSleepRender > 0)
+            {
+                Thread.Sleep((int)timeSleepRender);
+                deltaRender = 0;
+            }
             else
-                renderDelta = sleepTime;
+                deltaRender += timeSleepRender;
+
+            watch.Reset();
         }
 
         private void IniciarLogica()
